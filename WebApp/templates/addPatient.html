@@ -1,72 +1,43 @@
 {% extends 'main.html' %}
 
 {% block content %}
-<!DOCTYPE html>
+
 {% load static %}
-<html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-        <title>Add Patient</title>
-    </head>
-    <body class="">
-        <div id="layoutAuthentication">
-            <div id="layoutAuthentication_content">
-                <main>
-                    <div class="container">
-                        <div class="row justify-content-center">
-                            <div class="col-lg-5">
-                                <div class="card shadow-lg border-0 rounded-lg mt-5">
-                                    <div class="card-header"><h3 class="text-center font-weight-light my-4">Add Patient</h3></div>
-                                    <div class="card-body">
-                                        <form action="" method="post" name="addPatient">
-                                            {% csrf_token %}
-                                            <dl class="row">
-                                                <dt class="col-6">Full Name</dt>
-                                                <dd class="col-6"><input type="text" oninput="validateName()" name="fullname" required></dd>
-                                                <ul hidden id="nameError">
-                                                    <li hidden id="nameError"></li>
-                                                </ul>
-                                                <dt class="col-6">Birth Date</dt>
-                                                <dd class="col-6"><input type="date" name="birthdate" required></dd>
-                                                <dt class="col-6">Phone No.</dt>
-                                                <dd class="col-6"><input type="text" oninput="validateNumber()" name="phoneno" required></dd>
-                                                <ul hidden id="numberError">
-                                                    <li hidden id="numberError"></li>
-                                                </ul>
-                                                <dt class="col-2"><input type="submit" name="" id=""></dt>
-                                            </dl>
-                                            
-                                            <ul hidden>
-                                            
-                                            <li class="message">{{message}}</li>
-                       
+<div id="layoutSidenav_content">
+    <div id="layoutAuthentication">
+        <div id="layoutAuthentication_content">
+            <main>
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-5">
+                            <div class="card shadow-lg border-0 rounded-lg mt-5">
+                                <div class="card-header"><h3 class="text-center font-weight-light my-4">Add Patient</h3></div>
+                                <div class="card-body">
+                                    <form action="" method="post" name="addForm">
+                                        {% csrf_token %}
+                                        <dl class="row">
+                                            <dt class="col-6">Full Name</dt>
+                                            <dd class="col-6"><input type="text" oninput="validateName()" name="name" required></dd>
+                                            <ul hidden id="nameError">
+                                                <li hidden id="nameError"></li>
                                             </ul>
-                                    
-                                        </form>
-                                    </div>
+                                            <dt class="col-6">Birth Date</dt>
+                                            <dd class="col-6"><input type="date" name="birthdate" required></dd>
+                                            <dt class="col-6">Phone No.</dt>
+                                            <dd class="col-6"><input type="text" oninput="validateNumber()" name="phoneno" required></dd>
+                                            <ul hidden id="numberError">
+                                                <li hidden id="numberError"></li>
+                                            </ul>
+                                            <dt class="col-2"><input type="submit" name="" id=""></dt>
+                                        </dl>
+                                    </form>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </main>
-            </div>
-            <div id="layoutAuthentication_footer">
-                <footer class="py-4 bg-light mt-auto">
-                    <div class="container-fluid px-4">
-                        <div class="d-flex align-items-center justify-content-between small">
-                            <div class="text-muted">Copyright &copy; Your Website 2021</div>
-                            <div>
-                                <a href="#">Privacy Policy</a>
-                                &middot;
-                                <a href="#">Terms &amp; Conditions</a>
-                            </div>
-                        </div>
-                    </div>
-                </footer>
-            </div>
+                </div>
+            </main>
         </div>
-    </body>
-</html>
+    </div>
+</div>  
 {% endblock content %}

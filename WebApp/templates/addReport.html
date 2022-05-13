@@ -1,124 +1,60 @@
 {% extends 'main.html' %}
 
 {% block content %}
-<!DOCTYPE html>
+
 {% load static %}
-<html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-        <title>Dashboard - SB Admin</title>
-    </head>
-    <body class="sb-nav-fixed">
-        <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
-            <!-- Navbar Brand-->
-            <a class="navbar-brand ps-3" href="index.html">DLDnet</a>
-            <!-- Sidebar Toggle-->
-            <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars"></i></button>
-            <!-- Navbar Search-->
-            <form class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">
-                <div class="input-group">
-                    <input class="form-control" type="text" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" />
-                    <button class="btn btn-primary" id="btnNavbarSearch" type="button"><i class="fas fa-search"></i></button>
+<div id="layoutSidenav_content">
+    <main>
+        <div class="col-6 px-4">
+            <h1 class="mt-4">New Report</h1>
+            <ol class="breadcrumb mb-4">
+                <li class="breadcrumb-item active"></li>
+            </ol>
+            <div class="card mb-4"> 
+                <div class="card-header">
+                    <i class="fas fa-user me-1"></i>
+                    New Report
                 </div>
-            </form>
-            <!-- Navbar-->
-            <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fas fa-user fa-fw"></i></a>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                        <li><a class="dropdown-item" href="#!">Settings</a></li>
-                        <li><a class="dropdown-item" href="#!">Activity Log</a></li>
-                        <li><hr class="dropdown-divider" /></li>
-                        <li><a class="dropdown-item" href="#!">Logout</a></li>
-                    </ul>
-                </li>
-            </ul>
-        </nav>
-        <div id="layoutSidenav">
-            <div id="layoutSidenav_nav">
-                <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
-                    <div class="sb-sidenav-menu">
-                        <div class="nav">
-                            <div class="sb-sidenav-menu-heading">Records</div>
-                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
-                                <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
-                                Patients
-                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                            </a>
-                            <div class="sb-sidenav-menu-heading">Account</div>
-                            <a class="nav-link" href="{% url 'index' %}">
-                                <div class="sb-nav-link-icon"><i class="fas fa-user"></i></div>
-                                Profile
-                            </a>
-                        </div>
-                    </div>
-                    <div class="sb-sidenav-footer">
-                        <div class="small">Logged in as:</div>
-                        {{request.session.name}}
-                    </div>
-                </nav>
+                <div class="card-body">
+                    <form class="col-4 col-sm col-md-6 " method="post">
+                        {% csrf_token %}
+                        <dt class="col-6">Name</dt>
+                        {% if not path %}
+                        <dd class="col-6">{{patient.patient_name}}</dd>
+                        {% endif %}
+
+                        <dt class="col-6">Diagnosis</dt>
+                        {% if not result %}
+                        <!-- <dd class="col-6">{{request.session.result}}</dd> -->
+                        <input hidden name="classification" type="text" value="{{request.session.result}}">
+                        <dd class="col-6"><input id="diagnosis" name="diagnosis" type="text" value="{{request.session.result}}" readonly="true"></dd>
+                        <dd><label style="padding-right: 20px;" for="">Change Diagnosis</label><input type="checkbox" onclick="toggleCheckbox()" id="diagnosisCheck" name="diagnosisCheck"></dd>
+                        {% else %}
+                        <input type="text" value="">
+                        {% endif %}
+
+                        <!-- <dt class="col-6">Diagnosis</dt> -->
+                        <!-- <dd class="col-6"><input id="diagnosis" name="diagnosis" type="text" disabled value="{{request.session.result}}"></dd>
+                        <dd><label style="padding-right: 20px;" for="">Change Diagnosis</label><input type="checkbox" onclick="toggleCheckbox()" id="diagnosisCheck" name="diagnosisCheck"></dd> -->
+
+                        <dt class="col-6">Notes and Comments</dt>
+                        <dd class="col-6">
+                        <textarea name="notes" cols="30" rows="5">
+                        </textarea>
+                        </dd>
+
+                        <dt class="col-6">Scan</dt>
+                        <dd class="col-6"><img src="/media/scans/{{request.session.path}}" height="300" width="300"></dd>
+                        <dd class="col-6 mt-2">
+                        <input name="form" type="submit">
+                        </dd>
+                    </form>
+                </div>
             </div>
-            <div id="layoutSidenav_content">
-                <main>
-                    <div class="container-fluid px-4">
-                        <h1 class="mt-4">Report View</h1>
-                        <ol class="breadcrumb mb-4">
-                            <li class="breadcrumb-item active"></li>
-                        </ol>
-                        <div class="card mb-4"> 
-                            <div class="card-header">
-                                <i class="fas fa-user me-1"></i>
-                                New Report
-                            </div>
-                            <div class="card-body">
-                                <form class="col-4 col-sm col-md-6 " method="post">
-                                    {% csrf_token %}
-                                    <dt class="col-6">Name</dt>
-                                    {% if not path %}
-                                    <dd class="col-6">{{patient.patient_name}}</dd>
-                                    {% endif %}
-                                    <dt class="col-6">Diagnosis</dt>
-                                    <dd class="col-6">
-                                    {% if not result %}
-                                    <input name="diagnosis" type="text" value="{{request.session.result}}">
-                                    {% else %}
-                                    <input type="text" value="">
-                                    {% endif %}
-                                    </dd>
-                                    <dt class="col-6">Notes and Comments</dt>
-                                    <dd class="col-6">
-                                    <textarea name="notes" cols="30" rows="5">
-                                    </textarea>
-                                    </dd>
-                                    <dt class="col-6">Scan</dt>
-                                    <dd class="col-6"><img src="/media/scans/{{request.session.path}}" height="300" width="300"></dd>
-                                    <dd class="col-6 mt-2">
-                                    <input name="form" type="submit">
-                                </dd>
-                                </form>
-                            </div>
-                        </div>
-                        
-                    </div>
-                    <div class="col-md-12">
-                    </div>
-                </main>
-                <footer class="py-4 bg-light mt-auto">
-                    <div class="container-fluid px-4">
-                        <div class="d-flex align-items-center justify-content-between small">
-                            <div class="text-muted">Copyright &copy; Property of Grad Boys</div>
-                            <div>
-                                <a href="#">Privacy Policy</a>
-                                &middot;
-                                <a href="#">Terms &amp; Conditions</a>
-                            </div>
-                        </div>
-                    </div>
-                </footer>
-            </div>
+            
         </div>
-    </body>
-</html>
+        <div class="col-md-12">
+        </div>
+    </main>
+</div>
 {% endblock content %}

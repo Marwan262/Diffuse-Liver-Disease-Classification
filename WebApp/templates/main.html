@@ -5,17 +5,85 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>DLnet</title>
     
     <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" />
     <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js" crossorigin="anonymous"></script>
     
 </head>
-<body>
-    {% block content %}
+{% if request.session.loggedin %}
+<body class="sb-nav-fixed">
+    <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+        <!-- Sidebar Toggle-->
+        <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars"></i></button>
+        <!-- Navbar Brand-->
+        <a href="{% url 'index' %}"><img src="{% static 'images/logo.png' %}" style="padding-top: 5px; padding-left: 5px;" alt="" width="90" height="70"></a>
+        <!-- Navbar Search-->
+        <div hidden class="input-group">
+            <input class="form-control" type="text" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" />
+            <button class="btn btn-primary" id="btnNavbarSearch" type="button"><i class="fas fa-search"></i></button>
+        </div>
+        <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i style="margin: 5px;" class="fas fa-user fa-fw"></i></a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                    <li><a class="dropdown-item" href="#!">Logout</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+    <div id="layoutSidenav">
+        <div id="layoutSidenav_nav">
+            <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+                <div class="sb-sidenav-menu">
+                    <div class="nav">
+                        <div class="sb-sidenav-menu-heading">Records</div>
+                        {% if request.session.role == 'doctor' or 'admin' %}
+                        <a class="nav-link" href="{% url 'patients' %}">
+                            <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
+                            Patients
+                            <!-- <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div> -->
+                        </a>
+                        {% endif %}
+                        {% if request.session.role == 'admin' %}
+                        <a class="nav-link" href="{% url 'doctors' %}">
+                            <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
+                            Doctors
+                        </a>
+                        {% endif %}
+                        <div class="sb-sidenav-menu-heading">Account</div>
+                        {% if request.session.role == 'patient' %}
+                        <a class="nav-link" href="{% url 'index' %}">
+                            <div class="sb-nav-link-icon"><i class="fas fa-user"></i></div>
+                            Profile
+                        </a>
+                        {% endif %}
+                        {% if request.session.loggedin %}
+                        <a class="nav-link" href="{% url 'logout' %}">
+                            <div class="sb-nav-link-icon"><i class="fas fa-door"></i></div>
+                            Logout
+                        </a>
+                        {% endif %}
+                        {% if not request.session.loggedin %}
+                        <a class="nav-link" href="{% url 'logout' %}">
+                            <div class="sb-nav-link-icon"><i class="fas fa-door"></i></div>
+                            Login
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="sb-sidenav-footer">
+                    <div class="small">Logged in as:</div>
+                    {{request.session.name}}
+                </div>
+            </nav>
+        </div>
+        {% endif %}
+        {% block content %}
 
-    {% endblock %}
+        {% endblock content %}
+    </div>
 </body>
 
 <span class="" id="divider"></span>
@@ -25,8 +93,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" crossorigin="anonymous"></script>
 <script src="{% static 'js/datatables-simple-demo.js' %}"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
  
-
-    
-    
 </html>

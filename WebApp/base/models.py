@@ -42,12 +42,13 @@ class Patient(models.Model):
         return self.patient_name
 
 class Report(models.Model):
-    patient= models.ForeignKey(Patient, on_delete=models.CASCADE, blank = True)
-    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, blank = True)
+    patient= models.CharField(max_length = 13)
+    doctor = models.CharField(max_length = 13)
     notes = models.TextField(null = True, blank = True)
     image = models.ImageField(upload_to='scans/', height_field=None, width_field=None, max_length=None, blank=True)
     date = models.DateField(auto_now_add = True)
     classification = models.TextField(null = True, blank = True)
+    diagnosis = models.TextField(null = True, blank = True)
 
     def __int__(self):
         return self.patient
