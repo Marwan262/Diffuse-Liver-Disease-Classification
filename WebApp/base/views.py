@@ -152,9 +152,16 @@ def about(request):
     return render(request, 'about.html')
 
 def profile(request):
-    patient = Patient.objects.get(id = request.session['id'])
-    reports = Report.objects.filter(patient = request.session['id'])
-    return render(request, 'profile.html', {'patient' : patient, 'reports' : reports})    
+    if 'role' in request.session:
+        if request.session['role'] == 'patient':
+            patient = Patient.objects.get(id = request.session['id'])
+            reports = Report.objects.filter(patient = request.session['id'])
+            return render(request, 'profile.html', {'patient' : patient, 'reports' : reports}) 
+        else :
+            return redirect('index')
+    else:
+        return render(request, 'login.html')
+      
 
 def patients(request):
     if 'role' in request.session:
