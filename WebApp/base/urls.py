@@ -9,10 +9,10 @@ router = routers.DefaultRouter()
 
 urlpatterns = [
     path('', views.index, name = "index"),
-    path('about/', views.about, name = "about"),
     path('patients/', views.patients, name = "patients"),
-    path('doctors/', views.doctors, name = "doctors"),
     path('patients/<int:id>/', views.patient, name = "patient"),
+    path('doctors/', views.doctors, name = "doctors"),
+    path('doctors/<int:id>/', views.doctor, name = "doctor"),
     path('report/<int:id>', views.report, name = "report"),
     path('addpatient/', views.addpatient, name = "addpatient"),
     path('adddoctor/', views.adddoctor, name = "adddoctor"),
@@ -26,4 +26,5 @@ urlpatterns = [
     path('api/', include(router.urls)),
     path('classify/<int:id>/', views.get_prediction, name = "classify"),
     path('error/', views.error, name = "error"),
+    path('pdf/<int:id>/', views.pdf, name = "pdf"),
 ] 

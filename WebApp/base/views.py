@@ -1,3 +1,4 @@
+import time
 from tkinter import Y
 from django.forms import ImageField
 from rest_framework.response import Response
@@ -41,39 +42,47 @@ import pandas as pd
 
 def index(request):
     return render(request, 'index.html')
+
+def pdf(request, id):
+    report = Report.objects.get(id = id)
+
+    return render(request, "pdf.html", {'report': report})
     
 def index(request):
     return render(request, 'index.html')
 
 def addreport(request, id):
-    if request.method == 'POST':
-        notes = request.POST.get('notes')
-        classification = request.POST.get('classification')
-        doctor = request.session['id']
-        patient = id
-        diagnosis = request.POST.get('diagnosis')
-        Report.objects.create(notes=notes, diagnosis=diagnosis, classification=classification, image=request.session['path'], doctor=doctor, patient=patient)
-        return redirect('patient', id)
-    form = ImageForm
-    patient = Patient.objects.get(id=id)
-    context = {'patient' : patient, 'form' : form}
-    return render(request, 'addReport.html', context) 
+    if 'role' in request.session:
+        if request.session['role'] == 'doctor':
+            if request.method == 'POST':
+                notes = request.POST.get('notes')
+                classification = request.POST.get('classification')
+                doctor = request.session['id']
+                patient = id
+                diagnosis = request.POST.get('diagnosis')
+                Report.objects.create(notes=notes, diagnosis=diagnosis, classification=classification, image=request.session['path'], doctor=doctor, patient=patient)
+                return redirect('patient', id)
+            form = ImageForm
+            patient = Patient.objects.get(id=id)
+            context = {'patient' : patient, 'form' : form}
+            return render(request, 'addReport.html', context) 
  
 def report(request, id):
-    if request.method == 'POST':
-        # return render(request, 'index.html')
-        notes = request.POST.get('notesE')
-        classification = request.POST.get('classificationE')
-        Report.objects.filter(id = id).update(notes = notes, classification = classification)
-        return render(request, 'viewReport.html', {'report' : report}) 
-    report = Report.objects.get(id = id)
-    patient = Patient.objects.get(id=report.patient)
-    doctor = Doctor.objects.get(id=report.doctor)
-    context = {'patient' : patient, 'doctor' : doctor, 'report' : report}
-    return render(request, 'viewReport.html', context) 
+    if 'role' in request.session:
+        if request.session['role'] in ('patient', 'doctor', 'admin'):
+            report = Report.objects.get(id = id)
+            patient = Patient.objects.get(id=report.patient)
+            doctor = Doctor.objects.get(id=report.doctor)
+            if request.method == 'POST':
+                logging.debug("post")
+                notes = request.POST.get('notesE')
+                classification = request.POST.get('classificationE')
+                Report.objects.filter(id = id).update(notes = notes, classification = classification)
+                return render(request, 'viewReport.html', {'report' : report, 'patient' : patient, 'doctor': doctor}) 
+        
+            context = {'patient' : patient, 'doctor' : doctor, 'report' : report}
+            return render(request, 'viewReport.html', context) 
            
-def about(request):
-    return render(request, 'about.html')
 
 def profile(request):
     if 'role' in request.session:
@@ -86,7 +95,6 @@ def profile(request):
     else:
         return render(request, 'login.html')
       
-
 def patients(request):
     if 'role' in request.session:
         if request.session['role'] == 'doctor':
@@ -105,82 +113,105 @@ def patients(request):
         return render(request, 'index.html')
 
 def doctors(request):
-    doctors = Doctor.objects.all()
-    context = {'doctors': doctors}
-    return render(request, 'doctors.html', context)       
-       
-def patient(request, id):
-    if request.method == 'POST':
-        if 'newpass' in request.POST:
-            newpass = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(8))
-            request.session['newpass'] = newpass
-            return redirect('patient', id)
-        elif 'confirmpass' in request.POST:
-            if 'newpass' in request.session:
-                Patient.objects.filter(id=id).update(password=request.session['newpass'])
-                del request.session['newpass']
-            else:
-                return redirect('patient', id)
-    patient = Patient.objects.filter(id=id)
-    reports = Report.objects.filter(patient=id)
-    # doctors = Doctor.objects.filter(id=reports[0].doctor)
-    context1 = {'patients': patients}
-    context2 = {'reports': reports}
-    return render(request, 'viewPatient.html', {'patient':patient[0], 'reports':reports}) 
-       
-def addpatient(request):
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        birthdate = request.POST.get('birthdate')
-        phoneno = request.POST.get('phoneno')
-        error = False
-        if not name or not birthdate or not phoneno:
-            messages.error(request, 'Please fill in all fields.')
-            error = True
-        if any(char.isdigit() for char in name):
-            messages.error(request, 'Name cannot contain numbers.')
-            error = True
-        if len(phoneno)< 10 and phoneno.isnumeric():
-            messages.error(request, 'Please enter a valid phone number.')   
-            error = True
-        if not error:
-            doctor = Doctor.objects.get(id=request.session['id'])
-            N = 8
-            password = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(N))
-            x = name.replace(" ", "")
-            username = x.lower()
+    if 'role' in request.session:
+        if request.session['role'] == 'admin':
+            doctors = Doctor.objects.all()
+            context = {'doctors': doctors}
+            return render(request, 'doctors.html', context)       
 
-            query = Patient(patient_name=name, birth_date=birthdate, phone_num=phoneno, password=password, username=username, assigned_doctor=doctor)
-            query.save()
-            return redirect('patients')
-    return render(request, 'addPatient.html')
+def doctor(request, id):
+    if 'role' in request.session:
+        if request.session['role'] == 'admin':
+            doctor = Doctor.objects.get(id=id)
+            patients = Patient.objects.filter(assigned_doctor=id)   
+            return render(request, 'viewDoctor.html', {'patients':patients, 'doctor' : doctor}) 
+
+def patient(request, id):
+    if 'role' in request.session:
+        if request.session['role'] in ('doctor', 'admin'):
+            if request.method == 'POST':
+                if 'newpass' in request.POST:
+                    newpass = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(8))
+                    request.session['newpass'] = newpass
+                    return redirect('patient', id)
+                elif 'confirmpass' in request.POST:
+                    if 'newpass' in request.session:
+                        Patient.objects.filter(id=id).update(password=request.session['newpass'])
+                        del request.session['newpass']
+                    else:
+                        return redirect('patient', id)
+            patient = Patient.objects.get(id=id)
+            reports = Report.objects.filter(patient=id)
+            if len(reports) > 0:
+                id = reports[0].doctor
+                doctor = Doctor.objects.get(id=id).name  
+            else:
+                doctor = ''
+            return render(request, 'viewPatient.html', {'patient':patient, 'reports':reports, 'doctor' : doctor}) 
+        
+def addpatient(request):
+    if 'role' in request.session:
+        if request.session['role'] == 'doctor':
+            if request.method == 'POST':
+                name = request.POST.get('name')
+                birthdate = request.POST.get('birthdate')
+                phoneno = request.POST.get('phoneno')
+                error = False
+                if not name or not birthdate or not phoneno:
+                    messages.error(request, 'Please fill in all fields.')
+                    error = True
+                if any(char.isdigit() for char in name):
+                    messages.error(request, 'Name cannot contain numbers.')
+                    error = True
+                if len(phoneno)< 10 and phoneno.isnumeric():
+                    messages.error(request, 'Please enter a valid phone number.')   
+                    error = True
+                if not error:
+                    doctor = Doctor.objects.get(id=request.session['id'])
+                    N = 8
+                    password = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(N))
+                    x = name.replace(" ", "")
+                    username = x.lower()
+
+                    query = Patient(patient_name=name, birth_date=birthdate, phone_num=phoneno, password=password, username=username, assigned_doctor=doctor)
+                    query.save()
+                    return redirect('patients')
+            return render(request, 'addPatient.html')
 
 def adddoctor(request):
-    if request.method == 'POST':
-        name = request.POST.get('fullname')
-        username = name.replace(" ", "")
-        N = 6
-        password = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(N))
+    if 'role' in request.session:
+        if request.session['role'] == 'admin':
+            if request.method == 'POST':
+                name = request.POST.get('name')
+                username = name.replace(" ", "")
+                N = 6
+                password = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(N))
 
-        query = Doctor(name=name, username=username, password=password)
-        query.save()
-        return redirect('doctors')
-    return render(request, 'addDoctor.html')    
+                query = Doctor(name=name, username=username, password=password)
+                query.save()
+                return redirect('doctors')
+            return render(request, 'addDoctor.html')    
 
 def deletepatient(request, id):
-    Patient.objects.filter(id=id).delete()
+    if 'role' in request.session:
+        if request.session['role'] == 'doctor':
+            Patient.objects.filter(id=id).delete()
 
-    return redirect('patients')
+            return redirect('patients')
 
 def deletedoctor(request, id):
-    Doctor.objects.filter(id=id).delete()
+    if 'role' in request.session:
+        if request.session['role'] == 'admin':
+            Doctor.objects.filter(id=id).delete()
 
-    return redirect('doctors')    
+            return redirect('doctors')    
 
 def deletereport(request, id):
-    Report.objects.filter(id=id).delete()
+    if 'role' in request.session:
+        if request.session['role'] in ('doctor', 'admin'):
+            Report.objects.filter(id=id).delete()
 
-    return redirect('patients')    
+            return redirect('patients')    
 
 def login(request):
     if request.method == 'POST':
@@ -193,7 +224,7 @@ def login(request):
                 request.session['id'] = patient.id
                 request.session['name'] = patient.patient_name
                 request.session['loggedin'] = True
-                return redirect('profile')
+                return redirect('index')
         except Patient.DoesNotExist:
             patient = None
 
@@ -239,27 +270,28 @@ def logout(request):
         del request.session['newpass']
     except KeyError:
         pass
-    return redirect('login')
+    return redirect('index')
 
 def error(request):
     return render(request, 'error.html')
 
 def get_prediction(request, id):
-    if request.method == 'POST':
-        form = ImageForm(request.POST, request.FILES)
-        if form.is_valid():
-            # return redirect('patients')
-            path = form.cleaned_data['scan']
-            form.save()
-            result = status(path)
-            # if result is None:
-                # return redirect('error')
-                
-            request.session['result'] = result
-            request.session['path'] = str(path)
-            return redirect('addreport', id)
-    form = ImageForm
-    return render(request, 'classify.html', {'form' : form})
+    if 'role' in request.session:
+        if request.session['role'] == 'doctor':
+            if request.method == 'POST':
+                form = ImageForm(request.POST, request.FILES)
+                if form.is_valid():
+                    path = form.cleaned_data['scan']
+                    form.save()
+                    result = status(path)
+                    if result is None:
+                        return redirect('error')
+                        
+                    request.session['result'] = result
+                    request.session['path'] = str(path)
+                    return redirect('addreport', id)
+            form = ImageForm
+            return render(request, 'classify.html', {'form' : form})
 
 def status(path):
     # try:
@@ -267,10 +299,10 @@ def status(path):
     img = sitk.ReadImage(name, sitk.sitkUInt8)
     cnn_model = Model()
     np_image = sitk.GetArrayFromImage(img)
-    # try:
-    mask,anno = cnn_model(np_image.reshape(np_image.shape[0], np_image.shape[1], 1))
-    # except:
-    #     return None
+    try:
+        mask,anno = cnn_model(np_image.reshape(np_image.shape[0], np_image.shape[1], 1))
+    except:
+        return None
 
     models = loadmodel()
     roi_pos = split_image(mask)

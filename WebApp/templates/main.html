@@ -38,8 +38,8 @@
             <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
                 <div class="sb-sidenav-menu">
                     <div class="nav">
+                        {% if request.session.role == 'doctor' or request.session.role == 'admin' %}
                         <div class="sb-sidenav-menu-heading">Records</div>
-                        {% if request.session.role == 'doctor' or 'admin' %}
                         <a class="nav-link" href="{% url 'patients' %}">
                             <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
                             Patients

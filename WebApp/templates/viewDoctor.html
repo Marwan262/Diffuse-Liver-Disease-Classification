@@ -1,0 +1,73 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+{% load static %}
+<div id="layoutSidenav_content">
+    <main>
+        <div class="container-fluid px-4">
+            <h1 class="mt-4">Doctor View</h1>
+            <ol class="breadcrumb mb-4">
+                <li class="breadcrumb-item active"></li>
+            </ol>
+            <div class="card mb-4"> 
+                <div class="card-header">
+                    <i class="fas fa-user me-1"></i>
+                    {{doctor.name}}
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-6">Full Name</dt>
+                        <dd class="col-6">{{doctor.name}}</dd>
+                    </dl>
+                </div>
+            </div>
+            <div class="card mb-4"> 
+                <div class="card-header">
+                    <i class="fas fa-table me-1"></i>
+                    Patients
+                </div>
+                <div class="card-body">
+                    <table id="datatablesSimple">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Patient Name</th>
+                                <th>Phone No.</th>
+                            </tr>
+                        </thead>
+                        <tfoot>
+                            <tr>
+                                <th>ID</th>
+                                <th>Patient Name</th>
+                                <th>Phone No.</th>
+                            </tr>
+                        </tfoot>
+                        <tbody>
+                            {% for patient in patients %}
+                            <tr>
+                                <th>{{patient.id}}</th>
+                                <th>{{patient.patient_name}}</th>
+                                <th>{{patient.phone_num}}</th>
+                                {% if request.session.role == 'admin' %}
+                                <th><a href = "{% url 'patient' patient.id %}"><span class="fa fa-arrow-right fa-lg"></span></th>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% if request.session.role == 'admin' %}
+            <div class="col-md-2 mt-5">
+                <a href="{% url 'deletedoctor' doctor.id %}">
+                    <button onclick="" type="submit" class="btn btn-danger">Delete Doctor</button>
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+                
+
+{% endblock content %}
