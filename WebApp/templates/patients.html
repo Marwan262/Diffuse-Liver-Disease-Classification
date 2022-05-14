@@ -1,63 +1,62 @@
 {% extends 'main.html' %}
 
 {% block content %}
-
-<!DOCTYPE html>
 {% load static %}
-<html lang="en">
-
-<head>
-    <!-- Required meta tags always come first -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    
-    <title>Liver Disease Classification</title>
-</head>
-
-<body>
-
-<div class="row row-content align-items-center">
-    <div class="col"></div>
-    <div class="col-6 col-sm-9 align-items-center">
-        <h2>Patients</h2>
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <thead class="thead-dark">
-                    <tr>
-                        <th>ID</th>
-                        <th>Full Name</th>
-                        <th>Phone No.</th>
-                        <th>Birth Date</th>
-                    </tr>
-                </thead>
-                {% for patient in patients %}
-                <tbody>
-                    <tr>
-                        <th>{{patient.id}}</th>
-                        <th><a href="{{patient.id}}">{{patient.patient_name}}</a></th>
-                        <th>{{patient.phone_num}}</th>
-                        <th>{{patient.birth_date}}</th>
-                    </tr>
-                </tbody>
-                {% endfor %}
-            </table>
+<div id="layoutSidenav_content">
+    <main>
+        <div class="container-fluid px-4">
+            <h1 class="mt-4">Patients</h1>
+            <ol class="breadcrumb mb-4">
+                <li class="breadcrumb-item active"></li>
+            </ol>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-table me-1"></i>
+                    Assigned Patients
+                </div>
+                <div class="card-body">
+                    <table id="datatablesSimple">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>ID</th>
+                                <th>Phone No.</th>
+                                <th>Birth Date</th>
+                            </tr>
+                        </thead>
+                        <tfoot>
+                            <tr>
+                                <th>Name</th>
+                                <th>ID</th>
+                                <th>Phone No.</th>
+                                <th>Birth Date</th>
+                                <th></th>
+                            </tr>
+                        </tfoot>
+                        <tbody>
+                            {% for patient in patients %}
+                            <tr>
+                                <th><a href="{{patient.id}}">{{patient.patient_name}}</a></th>
+                                <th>{{patient.id}}</th>
+                                <th>{{patient.phone_num}}</th>
+                                <th>{{patient.birth_date}}</th>
+                                {% if request.session.role == 'doctor' %}
+                                <th><a href="{{patient.id}}"><span class="fa fa-arrow-right fa-lg"></span></th>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-    </div>
-    <div class="col"></div>
-    {% if request.session.role == 'doctor'%}
-    <div class="col-md-12 mt-5 align-items-center">
+        {% if request.session.role == 'doctor' %}
         <a href="{% url 'addpatient' %}">
-        <button onclick="" type="submit" class="btn btn-primary">Add Patient</button>
+            <button onclick="" type="submit" class="btn btn-primary">Add Patient</button>
         </a>
-    </div>
-    {% endif %}
+        {% endif %}
+    </main>
 </div>
-
-
-
-</body>
-
-</html>
-
+    
 {% endblock content %}

@@ -2,70 +2,49 @@
 
 {% block content %}
 
-<!DOCTYPE html>
 {% load static %}
-<html lang="en">
+<div id="layoutSidenav_content">
+    <main>
+        <div class="container-fluid px-4">
+            <h1 class="mt-4">Doctors</h1>
+            <ol class="breadcrumb mb-4">
+                <li class="breadcrumb-item active"></li>
+            </ol>
 
-<head>
-    <!-- Required meta tags always come first -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    
-    <title>Liver Disease Classification</title>
-</head>
-
-<body>
-
-<div class="row row-content align-items-center">
-    <div class="col"></div>
-    <div class="col-6 col-sm-9 align-items-center">
-        <h2>Doctors</h2>
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <thead class="thead-dark">
-                    <tr>
-                        <th>Full Name</th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                    </tr>
-                </thead>
-                {% for doctor in doctors %}
-                <tbody>
-                    <tr>
-                        <th>{{doctor.name}}</th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th><a href="{% url 'deletedoctor' doctor.id %}"><span class="fa fa-trash fa-lg"></span></a></th>
-                    </tr>
-                </tbody>
-                {% endfor %}
-            </table>
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-table me-1"></i>
+                    Registered Doctors
+                </div>
+                <div class="card-body">
+                    <table id="datatablesSimple">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                            </tr>
+                        </thead>
+                        <tfoot>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                            </tr>
+                        </tfoot>
+                        <tbody>
+                            {% for doctor in doctors %}
+                            <tr>
+                                <th>{{doctor.id}}</th>
+                                <th><a href="{{patient.id}}">{{doctor.name}}</a></th>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-    </div>
-    <div class="col"></div>
-    <div class="col-md-10 mt-5">
         <a href="{% url 'adddoctor' %}">
-        <button onclick="" type="submit" class="btn btn-primary">Add Doctor</button>
+            <button type="submit" class="btn btn-primary">Add Doctor</button>
         </a>
-    </div>
+    </main>
 </div>
-
-
-
-</body>
-
-</html>
-
 {% endblock content %}

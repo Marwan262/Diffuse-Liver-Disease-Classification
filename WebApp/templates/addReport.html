@@ -2,64 +2,59 @@
 
 {% block content %}
 
-<!DOCTYPE html>
 {% load static %}
-<html lang="en">
-
-<head>
-    <!-- Required meta tags always come first -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    
-    <title>Liver Disease Classification</title>
-</head>
-
-<body>
-    
-    <div class="row row-content">
-        <div class="col-md-6">
-            <div class="card">
-                <h3 class="card-header  text-black">Report</h3>
+<div id="layoutSidenav_content">
+    <main>
+        <div class="col-6 px-4">
+            <h1 class="mt-4">New Report</h1>
+            <ol class="breadcrumb mb-4">
+                <li class="breadcrumb-item active"></li>
+            </ol>
+            <div class="card mb-4"> 
+                <div class="card-header">
+                    <i class="fas fa-user me-1"></i>
+                    New Report
+                </div>
                 <div class="card-body">
-                    <dl class="row">
-                        <form class="col-4 col-sm col-md-6 " method="post">
-                            {% csrf_token %}
+                    <form class="col-4 col-sm col-md-6 " method="post">
+                        {% csrf_token %}
                         <dt class="col-6">Name</dt>
                         {% if not path %}
                         <dd class="col-6">{{patient.patient_name}}</dd>
                         {% endif %}
+
                         <dt class="col-6">Diagnosis</dt>
-                        <dd class="col-6">
-                            {% if not result %}
-                            <input name="diagnosis" type="text" value="{{request.session.result}}">
-                            {% else %}
-                            <input type="text" value="">
-                            {% endif %}
-                        </dd>
+                        {% if not result %}
+                        <!-- <dd class="col-6">{{request.session.result}}</dd> -->
+                        <input hidden name="classification" type="text" value="{{request.session.result}}">
+                        <dd class="col-6"><input id="diagnosis" name="diagnosis" type="text" value="{{request.session.result}}" readonly="true"></dd>
+                        <dd><label style="padding-right: 20px;" for="">Change Diagnosis</label><input type="checkbox" onclick="toggleCheckbox()" id="diagnosisCheck" name="diagnosisCheck"></dd>
+                        {% else %}
+                        <input type="text" value="">
+                        {% endif %}
+
+                        <!-- <dt class="col-6">Diagnosis</dt> -->
+                        <!-- <dd class="col-6"><input id="diagnosis" name="diagnosis" type="text" disabled value="{{request.session.result}}"></dd>
+                        <dd><label style="padding-right: 20px;" for="">Change Diagnosis</label><input type="checkbox" onclick="toggleCheckbox()" id="diagnosisCheck" name="diagnosisCheck"></dd> -->
+
                         <dt class="col-6">Notes and Comments</dt>
                         <dd class="col-6">
-                            <textarea name="notes" cols="30" rows="5">
-                            </textarea>
+                        <textarea name="notes" cols="30" rows="5">
+                        </textarea>
                         </dd>
+
                         <dt class="col-6">Scan</dt>
                         <dd class="col-6"><img src="/media/scans/{{request.session.path}}" height="300" width="300"></dd>
                         <dd class="col-6 mt-2">
-                            <input name="form" type="submit">
+                        <input name="form" type="submit">
                         </dd>
-                        </form>
-                    </dl>
+                    </form>
                 </div>
             </div>
+            
         </div>
-        
-    </div>
-
-
-    </div>   
-</body>
-
-
-</html>
-
+        <div class="col-md-12">
+        </div>
+    </main>
+</div>
 {% endblock content %}

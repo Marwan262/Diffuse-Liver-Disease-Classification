@@ -37,9 +37,9 @@ def loadmodel():
     classifiers = ['fatty_cirrhosis', 'normal_cirrhosis', 'normal_fatty']
     for name in classifiers:
         models[name] = [
-            load(open(f"I:/_Marwan Documents/Grad/Django 2/WebApp/models/{name}_mlp.joblib", 'rb')),
-            load(open(f"I:/_Marwan Documents/Grad/Django 2/WebApp/models/{name}_std.joblib", 'rb')),
-            load(open(f"I:/_Marwan Documents/Grad/Django 2/WebApp/models/{name}_cols.joblib", 'rb'))
+            load(open(f"I:/_Marwan Documents/Grad/Django 2/fork/WebApp/models/{name}_mlp.joblib", 'rb')),
+            load(open(f"I:/_Marwan Documents/Grad/Django 2/fork/WebApp/models/{name}_std.joblib", 'rb')),
+            load(open(f"I:/_Marwan Documents/Grad/Django 2/fork/WebApp/models/{name}_cols.joblib", 'rb'))
         ]
     return models
 
@@ -65,7 +65,7 @@ def classify_img(data, models):
 
 def status(path):
     # try:
-    name = 'I:\\_Marwan Documents\\Grad\\Django 2\\WebApp\\media\\scans\\' + str(path)
+    name = 'I:\\_Marwan Documents\\Grad\\Django 2\\fork\\WebApp\\media\\scans\\' + str(path)
     img = sitk.ReadImage(name, sitk.sitkUInt8)
     models = loadmodel()
     data = pd.DataFrame(feature_extraction(img, [(155,94), (94,94)]))
@@ -124,28 +124,44 @@ def get_prediction(request, id):
 def addreport(request, id):
     if request.method == 'POST':
         notes = request.POST.get('notes')
-        doctor = Doctor.objects.get(id=request.session['id'])
-        patient = Patient.objects.get(id=id)
+        classification = request.POST.get('classification')
+        doctor = request.session['id']
+        patient = id
         diagnosis = request.POST.get('diagnosis')
-        Report.objects.create(notes=notes, classification=diagnosis, image=request.session['path'], doctor=doctor, patient=patient)
+        Report.objects.create(notes=notes, diagnosis=diagnosis, classification=classification, image=request.session['path'], doctor=doctor, patient=patient)
         return redirect('patient', id)
     form = ImageForm
     patient = Patient.objects.get(id=id)
     context = {'patient' : patient, 'form' : form}
     return render(request, 'addReport.html', context) 
  
-
 def report(request, id):
+    if request.method == 'POST':
+        # return render(request, 'index.html')
+        notes = request.POST.get('notesE')
+        classification = request.POST.get('classificationE')
+        Report.objects.filter(id = id).update(notes = notes, classification = classification)
+        return render(request, 'viewReport.html', {'report' : report}) 
     report = Report.objects.get(id = id)
-    return render(request, 'viewReport.html', {'report' : report}) 
+    patient = Patient.objects.get(id=report.patient)
+    doctor = Doctor.objects.get(id=report.doctor)
+    context = {'patient' : patient, 'doctor' : doctor, 'report' : report}
+    return render(request, 'viewReport.html', context) 
            
 def about(request):
     return render(request, 'about.html')
 
 def profile(request):
-    patient = Patient.objects.get(id = request.session['id'])
-    reports = Report.objects.filter(patient = request.session['id'])
-    return render(request, 'profile.html', {'patient' : patient, 'reports' : reports})    
+    if 'role' in request.session:
+        if request.session['role'] == 'patient':
+            patient = Patient.objects.get(id = request.session['id'])
+            reports = Report.objects.filter(patient = request.session['id'])
+            return render(request, 'profile.html', {'patient' : patient, 'reports' : reports}) 
+        else :
+            return redirect('index')
+    else:
+        return render(request, 'login.html')
+      
 
 def patients(request):
     if 'role' in request.session:
@@ -158,6 +174,11 @@ def patients(request):
             patients = Patient.objects.all()
             context = {'patients': patients}
             return render(request, 'patients.html', context)
+
+        if request.session['role'] != 'doctor' and request.session['role'] != 'admin':
+            return render(request, 'index.html')
+    else:
+        return render(request, 'index.html')
 
 def doctors(request):
     doctors = Doctor.objects.all()
@@ -176,45 +197,23 @@ def patient(request, id):
                 del request.session['newpass']
             else:
                 return redirect('patient', id)
-    # patient = Patient.objects.filter(id=id)
-    # report = Report.objects.filter(patient=id)
-    # arr = []
-    # for report in reports:
-    #     if report.id == id:
-    #         arr.append(report)
-    # return render(request, 'viewPatient.html', {'patient':patient, 'reports':report}) 
-    found = False
-    arr = []
     patient = Patient.objects.filter(id=id)
     reports = Report.objects.filter(patient=id)
+    # doctors = Doctor.objects.filter(id=reports[0].doctor)
     context1 = {'patients': patients}
     context2 = {'reports': reports}
-    # for patient in patients:
-    #     if patient.id == id:
-    #         patientt = patient
-    #         context1 = patient
-    #         found = True
-    #         request.session['current_patient'] = patient.id
     return render(request, 'viewPatient.html', {'patient':patient[0], 'reports':reports}) 
-    # if found:
-    #     for report in reports:
-    #         if report.patient == patientt.id:
-    #             arr.append(report)
-    #     # request.session['currentpatient'] = name               
-    #     return render(request, 'viewPatient.html', {'patient':context1, 'reports':arr}) 
-    # else:
-    #     return redirect('patients') 
        
 def addpatient(request):
     if request.method == 'POST':
-        fullname = request.POST.get('fullname')
+        name = request.POST.get('name')
         birthdate = request.POST.get('birthdate')
         phoneno = request.POST.get('phoneno')
         error = False
-        if not fullname or not birthdate or not phoneno:
+        if not name or not birthdate or not phoneno:
             messages.error(request, 'Please fill in all fields.')
             error = True
-        if any(char.isdigit() for char in fullname):
+        if any(char.isdigit() for char in name):
             messages.error(request, 'Name cannot contain numbers.')
             error = True
         if len(phoneno)< 10 and phoneno.isnumeric():
@@ -224,16 +223,16 @@ def addpatient(request):
             doctor = Doctor.objects.get(id=request.session['id'])
             N = 8
             password = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(N))
-            x = fullname.replace(" ", "")
+            x = name.replace(" ", "")
             username = x.lower()
 
-            query = Patient(patient_name=fullname, birth_date=birthdate, phone_num=phoneno, password=password, username=username, assigned_doctor=doctor)
+            query = Patient(patient_name=name, birth_date=birthdate, phone_num=phoneno, password=password, username=username, assigned_doctor=doctor)
             query.save()
             return redirect('patients')
         
     return render(request, 'addPatient.html')
 
-def addoctor(request):
+def adddoctor(request):
     if request.method == 'POST':
         name = request.POST.get('fullname')
         username = name.replace(" ", "")
@@ -269,8 +268,9 @@ def login(request):
             if patient.password == password:
                 request.session['role'] = 'patient'
                 request.session['id'] = patient.id
+                request.session['name'] = patient.patient_name
                 request.session['loggedin'] = True
-                return redirect('index')
+                return redirect('profile')
         except Patient.DoesNotExist:
             patient = None
 
@@ -281,6 +281,7 @@ def login(request):
                     request.session['is_doctor'] = True
                     request.session['role'] = 'doctor'
                     request.session['id'] = doctor.id
+                    request.session['name'] = doctor.name
                     request.session['loggedin'] = True
                     return redirect('index')
             except Doctor.DoesNotExist:
@@ -291,6 +292,7 @@ def login(request):
                 admin = Admin.objects.get(username=username)
                 if admin.password == password:
                     request.session['role'] = 'admin'
+                    request.session['name'] = admin.name
                     request.session['id'] = admin.id
                     request.session['loggedin'] = True
                     return redirect('index')
@@ -300,7 +302,10 @@ def login(request):
         if admin == None:
             # return redirect('login')
             messages.error(request, 'Incorrect credentials.')
-    return render(request, 'login.html')    
+    if 'loggedin' in request.session:
+        return render(request, 'index.html')
+    else :
+        return render(request, 'login.html')    
 
 def logout(request):
     try:
@@ -308,6 +313,7 @@ def logout(request):
         del request.session['loggedin']
         del request.session['id']
         del request.session['report']
+        del request.session['newpass']
     except KeyError:
         pass
     return redirect('login')

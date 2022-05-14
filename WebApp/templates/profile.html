@@ -2,85 +2,125 @@
 
 {% block content %}
 
-<!DOCTYPE html>
 {% load static %}
-<html lang="en">
 
-<head>
-    <!-- Required meta tags always come first -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
+   
+<div id="layoutSidenav_content">
+    <main>
+        <div class="container-fluid px-4">
+            <div class="row gutters-sm mt-5">
+                <div class="col-md-4 mb-3">
+                  <div class="card">
+                    <div class="card-body">
+                      <div class="d-flex flex-column align-items-center text-center">
+                        <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="Admin" class="rounded-circle" width="150">
+                        <div class="mt-3">
+                          <h4>{{patient.patient_name}}</h4>
+                          <p class="text-secondary mb-1">Patient {{patient.id}} </p>
+                          <p class="text-muted font-size-sm">Heliopolis, Cairo</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-sm-3">
+                                <h6 class="mb-0">Full Name</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{patient.patient_name}}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                <h6 class="mb-0">Email</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                yehia1997@gmail.com
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                <h6 class="mb-0">Mobile</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{patient.phone_num}}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                <h6 class="mb-0">Gender</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                Male
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                <h6 class="mb-0">Marital Status</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                Single
+                                </div>
+                            </div>
+                        </div>
+                  </div>
     
-    <title>Liver Disease Classification</title>
-</head>
-
-<body id="body">
-
-    <div class="container" id="breadcrumb">
-        <div class="row">
-            <ol class="col-12 breadcrumb">
-               <li class="breadcrumb-item"><a href="{% url 'index' %}">Home</a></li>
-               <li class="breadcrumb-item active">My Profile</li>
-            </ol>
-        </div>
-    </div>
-
-    <div class="row row-content">
-        
-    <div class="col-md-6">
-        <div class="card">
-            <h3 class="card-header  text-black">{{patient.patient_name}}</h3>
-            <div class="card-body">
-                <dl class="row">
-                    <dt class="col-6">Full Name</dt>
-                    <dd class="col-6">{{patient.patient_name}}</dd>
-                    <dt class="col-6">Username</dt>
-                    <dd class="col-6">{{patient.username}}</dd>
-                    <dt class="col-6">Assigned Doctor</dt>
-                    <dd class="col-6">{{patient.assigned_doctor}}</dd>
-                    <dt class="col-6">Phone No.</dt>
-                    <dd class="col-6">{{patient.phone_num}}</dd>
-                    <dt class="col-6">Date of Birth</dt>
-                    <dd class="col-6">{{patient.birth_date}}</dd>
-                </dl>
-                <div class="col-md-2 mt-5">
-                    <button onclick="toggleEditReport"><span class="fa fa-edit fa-lg"></span></button>
+                    <div class="row gutters-sm">
+                        <div class="col-sm-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                            <h6 class="d-flex align-items-center mb-3"><i class="material-icons text-info mr-2">Medical Conditions</i></h6>
+                            </div>
+                        </div>
+                        </div>
+                        <div class="col-sm-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                            <h6 class="d-flex align-items-center mb-3"><i class="material-icons text-info mr-2">Diagnoses History</i></h6>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive col-md-6">
+                    <table class="table table-striped">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Report ID</th>
+                                <th>Patient Name</th>
+                                <th>Pathologist</th>
+                                <th>Date</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        {% for report in reports %}
+                        <tbody>
+                            <tr>
+                                <th>{{report.id}}</th>
+                                {% if request.session.role == 'admin' %}
+                                <th>{{patient.patient_name}}</th>
+                                {% else %}
+                                <th>{{patient.patient_name}}</th>
+                                {% endif %}
+                                <th>{{report.doctor}}</th>
+                                <th>{{report.date}}</th>
+                                <th><a href = "{% url 'report' report.id %}"><span class="fa fa-arrow-right fa-lg"></span></th>
+                            </tr>
+                        </tbody>
+                        {% endfor %}
+                    </table>
                 </div>
             </div>
+            
         </div>
-    </div>
-    
-    <div class="table-responsive col-md-6">
-        <table class="table table-striped">
-            <thead class="thead-light">
-                <tr>
-                    <th>Report ID</th>
-                    <th>Patient Name</th>
-                    <th>Pathologist</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
-            {% for report in reports %}
-            <tbody>
-                <tr>
-                    <th>{{report.id}}</th>
-                    {% if request.session.role == 'admin' %}
-                    <th>{{patient.patient_name}}</th>
-                    {% else %}
-                    <th><a href = "{% url 'report' report.id %}">{{patient.patient_name}}</a></th>
-                    {% endif %}
-                    <th>{{report.doctor}}</th>
-                    <th>{{report.date}}</th>
-                </tr>
-            </tbody>
-            {% endfor %}
-        </table>
-    </div>
-    
-    
-</body>
-
-</html>
-
+    </main>
+</div>
 {% endblock content %}

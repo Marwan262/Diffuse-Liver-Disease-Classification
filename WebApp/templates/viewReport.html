@@ -2,78 +2,63 @@
 
 {% block content %}
 
-<!DOCTYPE html>
 {% load static %}
-<html lang="en">
 
-<head>
-    <!-- Required meta tags always come first -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    
-    <title>Liver Disease Classification</title>
-</head>
-
-<body>
-    <div class="container" id="breadcrumb">
-        <div class="row">
-            <ol class="col-12 breadcrumb">
-               {% if request.session.role == 'doctor' %}
-               <li class="breadcrumb-item"><a href="{% url 'patients' %}">{{report.patient}}</a></li>
-               {% endif %}
-               {% if request.session.role == 'patient' %}
-               <li class="breadcrumb-item"><a href="{% url 'profile' %}">My Profile</a></li>
-               {% endif %}
-               <li class="breadcrumb-item active">Report {{report.id}}</li>
+<div id="layoutSidenav_content">
+    <main>
+        <div class="container-fluid px-4">
+            <h1 class="mt-4">Report View</h1>
+            <ol class="breadcrumb mb-4">
+                <li class="breadcrumb-item active"></li>
             </ol>
-        </div>
-    </div>
-
-<div class="row row-content align-items-center">
-    <div class="col"></div>
-    <div class="col-6 col-sm-9 align-items-center">
-        <div class="col-md-12">
-            <form action="post"></form>
-            <div class="card">
-                <h3 class="card-header  text-black">Report {{report.id}}</h3>
-                <div class="card-body">
-                    <dl id="card" class="row">
-                        <dt class="col-6">Full Name</dt>
-                        <dd id="name" class="col-6 ">{{report.patient}}</dd>
-                        <dt class="col-6">Doctor</dt>
-                        <dd id="pathologist" class="col-6 pathologist">{{report.doctor}}</dd>
-                        <dt class="col-6">Date</dt>
-                        <dd id="date" class="col-6 date">{{report.date}}</dd>
-                        <dt class="col-6">Notes</dt>
-                        <dd id="notes" class="col-6 notes">{{report.notes}}</dd>
-                        <dt class="col-6">Classification</dt>
-                        <dd id="classification" class="col-6 classification">{{report.classification}}</dd>
-                        <dt class="col-6">Scan</dt>
-                        <dd id="classification" class="col-6 classification"><img src="/media/scans/{{report.image}}" alt="Logo" height="120" width="120"></dd>
-                    </dl>
-                    {% if request.session.role == 'doctor' %}
-                    <div class="col-md-2 mt-5">
-                        <a href="{% url 'deletereport' report.id %}">
-                            <button onclick="" type="submit" class="btn btn-danger">Archive Report</button>
-                        </a>
-                        <button onclick="toggleEditReport"><span class="fa fa-edit fa-lg"></span></button>
-                    </div>
-                    {% endif %}
-                    <div class="col-md-6 mt-5">
+            <div class="col-12"></div>
+            <div class="card mb-4 col-6"> 
+                <div class="card-header">
+                    <i class="fas fa-user me-1"></i>
+                    Report {{report.id}}
                 </div>
+                <div class="card-body">
+                    <form action="" method="post" name="edit">
+                        {% csrf_token %}
+                        <dl class="row">
+                            <dt class="col-6">Full Name</dt>
+                            <dd id="pName" name="pName" class="col-6 ">{{patient.patient_name}}</dd>
+                            <dd id="pNameE" style="display: none;" class="col-6"><input  type="text" name="pNameE" value="{{report.patient}}" required></dd>
+
+                            <dt class="col-6">Report Author</dt>
+                            <dd id="dName" name="dName" class="col-6 dName">{{doctor.name}}</dd>
+                            <dd id="dNameE" style="display: none;" class="col-6"><input type="text" name="dNameE" value="{{report.doctor}}" required></dd>
+
+                            <dt class="col-6">Date</dt>
+                            <dd id="date" name="date" class="col-6 date">{{report.date}}</dd>
+                            <dd id="dateE" style="display: none;" class="col-6"><input type="date" value="{{report.date}}" name="dateE" required></dd>
+
+                            <dt class="col-6">Notes</dt>
+                            <dd id="notes" class="col-6 notes" name="notes">{{report.notes}}</dd>
+                            <dd id="notesE" style="display: none;" class="col-6"><input type="text" name="notesE" value="{{report.notes}}" required></dd>
+
+                            <dt class="col-6">Classification</dt>
+                            <dd id="classification" class="col-6 classification" name="classification">{{report.classification}}</dd>
+                            <dd id="classificationE" style="display: none;" class="col-6"><input type="text" name="classificationE" value="{{report.classification}}" required></dd>
+
+                            <!-- <!-- <dt class="col-6">Scan</dt> -->
+                            <!-- <dd id="scan" class="col-6 "><img src="/media/scans/{{report.image}}" alt="Logo" height="250" width="250"></dd> -->
+                            <dt class="col-6"><button onclick="toggleEditReport()"><i class="fas fa-edit "></i></button></dt>
+                            <dt id="editSubmit" style="display: none;" class="col-6"><input type="submit" name="edit" id=""></dt>
+                        </dl>
+                    </form>
                 </div>
             </div>
-        </form>
+            <div class="col-12"></div>
         </div>
-    </div>
-    <div class="col"></div>
+        <div class="col-md-12">
+        </div>
+        <div class="col-md-12 mt-0">
+            <a href="{% url 'deletereport' report.id %}">
+                <button onclick="" type="submit" class="btn btn-danger">Archive Report</button>
+            </a>
+        </div>
+    </main>
+    
 </div>
-
-
-
-</body>
-
-</html>
-
 {% endblock content %}

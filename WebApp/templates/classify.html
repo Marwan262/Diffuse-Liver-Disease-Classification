@@ -2,28 +2,19 @@
 
 {% block content %}
 
-<!DOCTYPE html>
 {% load static %}
-<html lang="en">
-
-<head>
-    <!-- Required meta tags always come first -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    
-    <title>Liver Disease Classification</title>
-</head>
-
-<body id="body">
-
-    <div class="row row-content align-items-center">
-
-        <div class="col"></div>
-
-        <div class="col-md-6 align-items-center">
-            <div class="card">
-                <h3 class="card-header text-black">Scan</h3>
+<div id="layoutSidenav_content">
+    <main>
+        <div class="container-fluid px-4">
+            <h1 class="mt-4">Report View</h1>
+            <ol class="breadcrumb mb-4">
+                <li class="breadcrumb-item active"></li>
+            </ol>
+            <div class="card mb-4"> 
+                <div class="card-header">
+                    <i class="fas fa-user me-1"></i>
+                    New Report
+                </div>
                 <div class="card-body">
                     <form action="" method="post" enctype="multipart/form-data">
                         {% csrf_token %}
@@ -31,14 +22,10 @@
                         <dt class="col-2 mt-0"><input value="Submit" type="submit" name="" id=""></dt>
                     </form>
                 </div>
-            </div>
+            </div> 
         </div>
-
-        <div class="col"></div>
-    </div>
-
-</body>
-
-</html>
-
+        <div class="col-md-12">
+        </div>
+    </main>
+</div>
 {% endblock content %}

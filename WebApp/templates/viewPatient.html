@@ -2,139 +2,105 @@
 
 {% block content %}
 
-<!DOCTYPE html>
 {% load static %}
-<html lang="en">
-
-<head>
-    <!-- Required meta tags always come first -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    
-    <title>Liver Disease Classification</title>
-</head>
-
-<body id="body">
-
-    <div class="container" id="breadcrumb">
-        <div class="row">
-            <ol class="col-12 breadcrumb">
-               <li class="breadcrumb-item"><a href="{% url 'patients' %}">Patients</a></li>
-               <li class="breadcrumb-item active">{{patient.patient_name}}</li>
+<div id="layoutSidenav_content">
+    <main>
+        <div class="container-fluid px-4">
+            <h1 class="mt-4">Patient View</h1>
+            <ol class="breadcrumb mb-4">
+                <li class="breadcrumb-item active"></li>
             </ol>
-        </div>
-    </div>
-    <!-- <h3>{{patient.patient_name}}</h3> -->
-    <div class="row row-content">
-        
-    <div class="col-md-6">
-        <div class="card">
-            <h3 class="card-header  text-black">{{patient.patient_name}}</h3>
-            <div class="card-body">
-                <dl class="row">
-                    <dt class="col-6">Full Name</dt>
-                    <dd class="col-6">{{patient.patient_name}}</dd>
-                    <dt class="col-6">Username</dt>
-                    <dd class="col-6">{{patient.username}}</dd>
-                    <dt class="col-6">Assigned Doctor</dt>
-                    <dd class="col-6">{{patient.assigned_doctor}}</dd>
-                    <dt class="col-6">Phone No.</dt>
-                    <dd class="col-6">{{patient.phone_num}}</dd>
-                    <dt class="col-6">Date of Birth</dt>
-                    <dd class="col-6">{{patient.birth_date}}</dd>
-                </dl>
+            <div class="card mb-4"> 
+                <div class="card-header">
+                    <i class="fas fa-user me-1"></i>
+                    {{patient.patient_name}}
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-6">Full Name</dt>
+                        <dd class="col-6">{{patient.patient_name}}</dd>
+                        <dt class="col-6">Username</dt>
+                        <dd class="col-6">{{patient.username}}</dd>
+                        <dt class="col-6">Assigned Doctor</dt>
+                        <dd class="col-6">{{patient.assigned_doctor}}</dd>
+                        <dt class="col-6">Phone No.</dt>
+                        <dd class="col-6">{{patient.phone_num}}</dd>
+                        <dt class="col-6">Date of Birth</dt>
+                        <dd class="col-6">{{patient.birth_date}}</dd>
+                    </dl>
+                </div>
+            </div>
+            <div class="card mb-4"> 
+                <div class="card-header">
+                    <i class="fas fa-table me-1"></i>
+                    Reports
+                </div>
+                <div class="card-body">
+                    <table id="datatablesSimple">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Patient Name</th>
+                                <th>Report Author</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tfoot>
+                            <tr>
+                                <th>ID</th>
+                                <th>Patient Name</th>
+                                <th>Report Author</th>
+                                <th>Date</th>
+                            </tr>
+                        </tfoot>
+                        <tbody>
+                            {% for report in reports %}
+                            <tr>
+                                <th>{{report.id}}</th>
+                                <th>{{patient.patient_name}}</th>
+                                <th>{{doctors.name}}</th>
+                                <th>{{report.date}}</th>
+                                {% if request.session.role == 'doctor' %}
+                                <th><a href = "{% url 'report' report.id %}"><span class="fa fa-arrow-right fa-lg"></span></th>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
-
-    <!-- <h4>Reports</h4> -->
-    
-    <div class="table-responsive col-md-6">
-        <table class="table table-striped">
-            <thead class="thead-light">
-                <tr>
-                    <th>Report ID</th>
-                    <th>Patient Name</th>
-                    <th>Pathologist</th>
-                    <th>Date</th>
-                    <th></th>
-                </tr>
-            </thead>
-            {% for report in reports %}
-            <tbody>
-                <tr>
-                    <th>{{report.id}}</th>
-                    <th>{{report.patient}}</th>
-                    <th>{{report.doctor}}</th>
-                    <th>{{report.date}}</th>
-                    {% if request.session.role == 'doctor' %}
-                    <th><a href = "{% url 'report' report.id %}"><span class="fa fa-arrow-right fa-lg"></span></th>
-                    {% endif %}
-                </tr>
-            </tbody>
-            {% endfor %}
-        </table>
-    </div>
-    {% if request.session.role == 'doctor'%}
-    <div class="col-md-10 mt-5">
+        {% if request.session.role == 'doctor' %}
         <a href="{% url 'classify' patient.id %}">
             <button onclick="" type="submit" class="btn btn-primary">Generate Report</button>
         </a>
-    </div>
-    <div class="col-md-2 mt-5">
-        <a href="{% url 'deletepatient' patient.id %}">
-            <button onclick="" type="submit" class="btn btn-danger">Archive Patient</button>
-        </a>
-    </div>
-
-    {% endif %}
-
-    {% if request.session.role == 'admin'%}
-    <div class="row row-content">
-        <form method="post">
-            {% csrf_token %}
-            <div class="col-md-5">
-                <button name="newpass" type="submit" class="btn btn-success">Generate New Password</button>
-            </div>
-            {% if 'newpass' in request.session %}
-            <div>
-                <button name="confirmpass" type="submit" class="btn btn-warning">Confirm password</button>
-            </div>
-            <div class="col-md-5">
-                <text class="passtext">{{request.session.newpass}}</text>
-            </div>
-            {% endif %}
-            <!-- <div class="col-md-7 mt-1">
-                <a id="copy" href="#" hidden>
-                    <button type="button" onclick="copyPassword()"><span class="fa fa-copy fa-lg"></span></button>
-                </a>
-                <a id="save" href="#" hidden>
-                    <button type="submit"><span class="fa fa-save fa-lg"></span></button>
-                </a>
-            </div> -->
+        {% endif %}
+        <div class="col-md-2 mt-5">
+            <a href="{% url 'deletepatient' patient.id %}">
+                <button onclick="" type="submit" class="btn btn-danger">Archive Patient</button>
+            </a>
+        </div>
+        {% if request.session.role == 'admin'%}
+            <div class="row row-content">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="col-md-5">
+                        <button name="newpass" type="submit" class="btn btn-success">Generate New Password</button>
+                    </div>
+                    {% if 'newpass' in request.session %}
+                    <div>
+                        <button name="confirmpass" type="submit" class="btn btn-warning">Confirm password</button>
+                    </div>
+                    <div class="col-md-5">
+                        <text class="passtext">{{request.session.newpass}}</text>
+                    </div>
+        {% endif %}
         </form>
     </div>
-    <!-- {% if 'newpass' in request.session %} 
-     <div id="myModal" class="modal fade" role="dialog">
-        <div class="modal-dialog modal-lg" role="content">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <text class="text">Confirm new password?</text>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title"></h4>
-                </div>
-                <div class="modal-body">
-                <p>{{request.session.newpass}}</p>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endif %} -->
   </div>
     {% endif %}
-</body>
-
-</html>
+                </main>
+            </div>
+        </div>
 
 {% endblock content %}
