@@ -25,6 +25,7 @@
             <table class="table table-striped">
                 <thead class="thead-dark">
                     <tr>
+                        <th>ID</th>
                         <th>Full Name</th>
                         <th>Phone No.</th>
                         <th>Birth Date</th>
@@ -33,7 +34,8 @@
                 {% for patient in patients %}
                 <tbody>
                     <tr>
-                        <th><a href="{{patient.patient_name}}">{{patient.patient_name}}</a></th>
+                        <th>{{patient.id}}</th>
+                        <th><a href="{{patient.id}}">{{patient.patient_name}}</a></th>
                         <th>{{patient.phone_num}}</th>
                         <th>{{patient.birth_date}}</th>
                     </tr>

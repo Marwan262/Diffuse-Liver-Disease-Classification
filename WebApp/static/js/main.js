@@ -1,14 +1,11 @@
 $(document).ready(function() {
 
-    $('#loginButton').click(function() {
-        $('#loginModal').modal('toggle');
-    })
+    $(document).ready(function(){
+        $("#myBtn").click(function(){
+          $("#myModal").modal();
+        });
+      });
 })
-
-// function toggleEditReport() {
-//     value = $(#card).find('dd.name').html()
-//     $('#name').replaceWith('<input name="name" id="#name" type="text" value="' + value + '"> ')
-// }
 
 function generatePassword() {
     var string =(Math.random() + 1).toString(36).substring(2);
@@ -23,17 +20,3 @@ function copyPassword() {
     navigator.clipboard.writeText(copyText.value); 
 }
 
-// function savePassword() {
-//     // alert("success");
-//     s = document.getElementById("password").value
-//     alert(s);
-//     $.ajax({
-//         method: 'POST',
-//         type: "POST",
-//         dataType: 'json',
-//         url: '{% url "patients" %}',
-//         data: {s, csrfmiddlewaretoken: '{{ csrf_token }}'},
-//         success: alert("it worked"),
-//         error: alert("didnt work")
-//     });
-// }

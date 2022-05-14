@@ -38,16 +38,22 @@
                         {% csrf_token %}
                         <dl class="row">
                             <dt class="col-6">Full Name</dt>
-                            <dd class="col-6"><input type="text" name="fullname" required></dd>
+                            <dd class="col-6"><input type="text" name="fullname" ></dd>
                             <dt class="col-6">Birth Date</dt>
-                            <dd class="col-6"><input type="date" name="birthdate" required></dd>
+                            <dd class="col-6"><input type="date" name="birthdate" ></dd>
                             <dt class="col-6">Phone No.</dt>
-                            <dd class="col-6"><input type="text" name="phoneno" required></dd>
+                            <dd class="col-6"><input type="text" name="phoneno" ></dd>
 
                             <dt class="col-2"><input type="submit" name="" id=""></dt>
                         </dl>
                     </form>
-                    
+                    {% if messages %}
+                    <ul>
+                    {% for message in messages %}
+                        <li class="message">{{message}}</li>
+                    {% endfor %}
+                    </ul>
+                    {% endif %}
                 </div>
             </div>
         </div>

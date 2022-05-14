@@ -9,6 +9,16 @@ markdown = "*"
 django-filter = "*"
 pandas = "*"
 joblib = "*"
+django-extensions = "*"
+pyparsing = "*"
+pydot = "*"
+graphviz = "*"
+pydotplus = "*"
+scikit-learn = "*"
+simpleitk = "*"
+scikit-image = "*"
+radiomics = "*"
+pyradiomics = "*"
 
 [dev-packages]
 

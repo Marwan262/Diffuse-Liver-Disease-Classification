@@ -1,3 +1,4 @@
+from distutils.command.upload import upload
 from time import strftime
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
@@ -33,7 +34,7 @@ class Patient(models.Model):
     phone_num = models.CharField(max_length = 13)
     birth_date = models.DateField()
  
-    assigned_doctor = models.CharField(max_length = 201)
+    assigned_doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
     check_in_date = models.DateField(auto_now_add = True)
     role = models.CharField(max_length=200, default="patient")
 
@@ -41,19 +42,18 @@ class Patient(models.Model):
         return self.patient_name
 
 class Report(models.Model):
-    patient_name = models.CharField(max_length = 200)
-    pathologist = models.CharField(max_length = 200)
+    patient= models.ForeignKey(Patient, on_delete=models.CASCADE, blank = True)
+    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, blank = True)
     notes = models.TextField(null = True, blank = True)
-    image = models.ImageField(upload_to='static/images/scans/', height_field=None, width_field=None, max_length=None)
+    image = models.ImageField(upload_to='scans/', height_field=None, width_field=None, max_length=None, blank=True)
     date = models.DateField(auto_now_add = True)
     classification = models.TextField(null = True, blank = True)
 
-    def __str__(self):
-        return self.patient_name             
+    def __int__(self):
+        return self.patient
+         
+class Scan(models.Model):
+    scan = models.ImageField(upload_to='scans/')
 
-class Model(models.Model):
-    image = models.ImageField
-    
-    def __str__(self):
-        return self.image             
-
+    def __int__(self):
+        return self.id

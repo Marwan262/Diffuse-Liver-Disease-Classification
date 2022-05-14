@@ -35,13 +35,13 @@
                 <dl class="row">
                     <dt class="col-6">Full Name</dt>
                     <dd class="col-6">{{patient.patient_name}}</dd>
-                    <dt class="col-6">Userame</dt>
+                    <dt class="col-6">Username</dt>
                     <dd class="col-6">{{patient.username}}</dd>
                     <dt class="col-6">Assigned Doctor</dt>
                     <dd class="col-6">{{patient.assigned_doctor}}</dd>
                     <dt class="col-6">Phone No.</dt>
                     <dd class="col-6">{{patient.phone_num}}</dd>
-                    <dt class="col-6">Birth Date</dt>
+                    <dt class="col-6">Date of Birth</dt>
                     <dd class="col-6">{{patient.birth_date}}</dd>
                 </dl>
             </div>
@@ -58,19 +58,19 @@
                     <th>Patient Name</th>
                     <th>Pathologist</th>
                     <th>Date</th>
+                    <th></th>
                 </tr>
             </thead>
             {% for report in reports %}
             <tbody>
                 <tr>
                     <th>{{report.id}}</th>
-                    {% if request.session.role == 'admin' %}
-                    <th>{{report.patient_name}}</th>
-                    {% else %}
-                    <th><a href = "{% url 'report' report.id %}">{{report.patient_name}}</a></th>
-                    {% endif %}
-                    <th>{{report.pathologist}}</th>
+                    <th>{{report.patient}}</th>
+                    <th>{{report.doctor}}</th>
                     <th>{{report.date}}</th>
+                    {% if request.session.role == 'doctor' %}
+                    <th><a href = "{% url 'report' report.id %}"><span class="fa fa-arrow-right fa-lg"></span></th>
+                    {% endif %}
                 </tr>
             </tbody>
             {% endfor %}
@@ -78,38 +78,60 @@
     </div>
     {% if request.session.role == 'doctor'%}
     <div class="col-md-10 mt-5">
-        <a href="{% url 'addreport' patient.patient_name %}">
+        <a href="{% url 'classify' patient.id %}">
             <button onclick="" type="submit" class="btn btn-primary">Generate Report</button>
         </a>
     </div>
-    <!-- <form action="post"> -->
     <div class="col-md-2 mt-5">
         <a href="{% url 'deletepatient' patient.id %}">
             <button onclick="" type="submit" class="btn btn-danger">Archive Patient</button>
         </a>
     </div>
-    <!-- </form> -->
-</div>
+
     {% endif %}
 
     {% if request.session.role == 'admin'%}
     <div class="row row-content">
         <form method="post">
             {% csrf_token %}
-            <div class="col-md-5 ">
-                <button type="button" onclick="generatePassword()" class="btn btn-success">Generate Password</button>
+            <div class="col-md-5">
+                <button name="newpass" type="submit" class="btn btn-success">Generate New Password</button>
             </div>
-            <div class="col-md-7 mt-1">
-                <input id="pass" name="pass" type="text" readonly="true" value="New Password">
+            {% if 'newpass' in request.session %}
+            <div>
+                <button name="confirmpass" type="submit" class="btn btn-warning">Confirm password</button>
+            </div>
+            <div class="col-md-5">
+                <text class="passtext">{{request.session.newpass}}</text>
+            </div>
+            {% endif %}
+            <!-- <div class="col-md-7 mt-1">
                 <a id="copy" href="#" hidden>
                     <button type="button" onclick="copyPassword()"><span class="fa fa-copy fa-lg"></span></button>
                 </a>
                 <a id="save" href="#" hidden>
                     <button type="submit"><span class="fa fa-save fa-lg"></span></button>
                 </a>
-            </div>
+            </div> -->
         </form>
     </div>
+    <!-- {% if 'newpass' in request.session %} 
+     <div id="myModal" class="modal fade" role="dialog">
+        <div class="modal-dialog modal-lg" role="content">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <text class="text">Confirm new password?</text>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title"></h4>
+                </div>
+                <div class="modal-body">
+                <p>{{request.session.newpass}}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %} -->
+  </div>
     {% endif %}
 </body>
 

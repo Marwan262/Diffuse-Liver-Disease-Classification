@@ -17,17 +17,25 @@
     background-color: #181717; }
     
   .modal-header {
-    background: #00b48d; }
+    font-size: 200;
+    background: #ffffff; }
     .modal-header button {
-      color: floralwhite; }
+      color: rgb(218, 218, 218); }
     
   .modal-body {
-    background: #007888; }
+     } 
     
-  
+  .text {
+    color: rgb(255, 145, 0);
+  }
+
+  .message {
+    color: rgb(255, 145, 0);
+  }
+
   #container {
     color: black;
-    background: #007888;
+    /* background: #007888; */
   }
 
   .fa {
@@ -36,7 +44,7 @@
   }
   
   .card {
-    color: #007888;
+    color: #1f1f1f;
   }
   
   .card-header {
@@ -52,7 +60,7 @@
   
   a {
     color: #000000;
-    text-decoration: underline;
+    /* text-decoration: underline; */
   }
   
   a:hover {

@@ -11,7 +11,6 @@
     <link rel="stylesheet" type="text/css" media="screen" href="{% static 'font-awesome/css/font-awesome.min.css' %}">
     <link rel="stylesheet" type="text/css" media="screen" href="{% static 'css/main.css' %}">
     
-    
 </head>
 <body>
     <!-- {% include 'navbar.html' %} -->
@@ -29,8 +28,8 @@
         <div class="collapse navbar-collapse" id="Navbar">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item"><a class="nav-link" href="{% url 'index' %}"><span class="fa fa-home fa-lg"></span> Home</a></li>
-                <li class="nav-item"><a class="nav-link" href="aboutus.html"><span class="fa fa-info fa-lg"></span> About</a></li>
-                <li class="nav-item"><a class="nav-link" href="contactus.html"><span class="fa fa-address-card fa-lg"></span> Contact Us</a></li>
+                <!-- <li class="nav-item"><a class="nav-link" href="aboutus.html"><span class="fa fa-info fa-lg"></span> About</a></li>
+                <li class="nav-item"><a class="nav-link" href="contactus.html"><span class="fa fa-address-card fa-lg"></span> Contact Us</a></li> -->
                 {% if 'role' in request.session %}
                 {% if request.session.role == 'doctor' or request.session.role == 'admin' %}
                 <li class="nav-item"><a class="nav-link" href="{% url 'patients' %}"><span class="fa fa-address-card fa-lg"></span> Patients </a></li>
@@ -43,21 +42,19 @@
                 {% endif %}
                 {% endif %}
             </ul>
-            {% if 'loggedin' not in request.session %}
+            {% if 'loggedin' not in request.session and request.path != '/login/' %}
             <span class="navbar-text">
                 <a href="{% url 'login' %}"">
                     <span class="fa fa-sign-in"></span> Login
                 </a>
             </span>
-            {% else %}
+            {% elif request.path != '/login/' %}
             <span class="navbar-text">
                 <a href="{% url 'logout' %}">
                     <span class="fa fa-sign-in"></span> Logout
                 </a>
             </span>
             {% endif %}
-
-            
         </div>
     </div>
 </nav>

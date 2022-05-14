@@ -20,7 +20,7 @@
         <div class="row">
             <ol class="col-12 breadcrumb">
                {% if request.session.role == 'doctor' %}
-               <li class="breadcrumb-item"><a href="{% url 'patients' %}">{{report.patient_name}}</a></li>
+               <li class="breadcrumb-item"><a href="{% url 'patients' %}">{{report.patient}}</a></li>
                {% endif %}
                {% if request.session.role == 'patient' %}
                <li class="breadcrumb-item"><a href="{% url 'profile' %}">My Profile</a></li>
@@ -40,24 +40,27 @@
                 <div class="card-body">
                     <dl id="card" class="row">
                         <dt class="col-6">Full Name</dt>
-                        <dd id="name" class="col-6 ">{{report.patient_name}}</dd>
-                        <dt class="col-6">Pathologist</dt>
-                        <dd id="pathologist" class="col-6 pathologist">{{report.pathologist}}</dd>
+                        <dd id="name" class="col-6 ">{{report.patient}}</dd>
+                        <dt class="col-6">Doctor</dt>
+                        <dd id="pathologist" class="col-6 pathologist">{{report.doctor}}</dd>
                         <dt class="col-6">Date</dt>
                         <dd id="date" class="col-6 date">{{report.date}}</dd>
                         <dt class="col-6">Notes</dt>
                         <dd id="notes" class="col-6 notes">{{report.notes}}</dd>
                         <dt class="col-6">Classification</dt>
                         <dd id="classification" class="col-6 classification">{{report.classification}}</dd>
+                        <dt class="col-6">Scan</dt>
+                        <dd id="classification" class="col-6 classification"><img src="/media/scans/{{report.image}}" alt="Logo" height="120" width="120"></dd>
                     </dl>
+                    {% if request.session.role == 'doctor' %}
                     <div class="col-md-2 mt-5">
-                        <!-- <button onclick="toggleEditReport"><span class="fa fa-edit fa-lg"></span></button> -->
                         <a href="{% url 'deletereport' report.id %}">
                             <button onclick="" type="submit" class="btn btn-danger">Archive Report</button>
                         </a>
+                        <button onclick="toggleEditReport"><span class="fa fa-edit fa-lg"></span></button>
                     </div>
+                    {% endif %}
                     <div class="col-md-6 mt-5">
-                    
                 </div>
                 </div>
             </div>

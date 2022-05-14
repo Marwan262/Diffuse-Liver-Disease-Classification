@@ -23,47 +23,36 @@
                 <h3 class="card-header  text-black">Report</h3>
                 <div class="card-body">
                     <dl class="row">
-                        <form class="col-4 col-sm col-md-6">
+                        <form class="col-4 col-sm col-md-6 " method="post">
                             {% csrf_token %}
                         <dt class="col-6">Name</dt>
+                        {% if not path %}
                         <dd class="col-6">{{patient.patient_name}}</dd>
+                        {% endif %}
                         <dt class="col-6">Diagnosis</dt>
                         <dd class="col-6">
-                            {% if 'report' in request.session %}
-                            <input type="text" value="{{request.session.report}}">
+                            {% if not result %}
+                            <input name="diagnosis" type="text" value="{{request.session.result}}">
                             {% else %}
                             <input type="text" value="">
                             {% endif %}
                         </dd>
                         <dt class="col-6">Notes and Comments</dt>
                         <dd class="col-6">
-                            <textarea name="text" cols="30" rows="5">
+                            <textarea name="notes" cols="30" rows="5">
                             </textarea>
                         </dd>
+                        <dt class="col-6">Scan</dt>
+                        <dd class="col-6"><img src="/media/scans/{{request.session.path}}" height="300" width="300"></dd>
                         <dd class="col-6 mt-2">
-                            {% if 'report' in request.session %}
                             <input name="form" type="submit">
-                            {% endif %}
-                        </form>
                         </dd>
+                        </form>
                     </dl>
                 </div>
             </div>
         </div>
         
-        <div class="col-md-6">
-        <div class="card">
-            <h3 class="card-header  text-black">Upload Image</h3>
-            <div class="card-body">
-                <dl class="row">
-                <form class="col-4 col-sm col-md-6 mt-2" method="post">
-                    {% csrf_token %}
-                    <input name="file" type="file">
-                    <input name="image" type="submit">
-                </form>
-                </dl>
-            </div>
-        </div>
     </div>
 
 
