@@ -23,7 +23,7 @@ urlpatterns = [
     path('login/', views.login, name = "login"),
     path('logout/', views.logout, name = "logout"),
     path('profile/', views.profile, name = "profile"),
-    path('test/', views.testform, name = "test"),
     path('api/', include(router.urls)),
     path('classify/<int:id>/', views.get_prediction, name = "classify"),
+    path('error/', views.error, name = "error"),
 ] 
