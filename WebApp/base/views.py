@@ -13,7 +13,12 @@ from queue import Empty
 import random
 from rest_framework import status 
 import numpy as np
+from detectron2 import model_zoo
+from detectron2.engine import DefaultPredictor
+from detectron2.config import get_cfg
 from radiomics import glrlm, glcm, firstorder
+
+from WebApp.settings import BASE_DIR
 from .forms import ImageForm
 from skimage.feature import greycomatrix
 from skimage.feature import greycoprops
@@ -27,104 +32,20 @@ from django.http import HttpResponse
 from .models import Patient
 from .models import Doctor
 from .models import Admin
+import torch
 from .models import Report
 from django.contrib.auth.models import User
 from django.contrib import messages
 from joblib import load
 import sklearn
+import logging
 import pandas as pd
 
-def loadmodel():
-    BASE_DIR = Path(__file__).resolve().parent.parent
-    # name = f'{BASE_DIR}\\media\\scans\\' + str(path)
-    models = {}
-    classifiers = ['fatty_cirrhosis', 'normal_cirrhosis', 'normal_fatty']
-    for name in classifiers:
-        models[name] = [
-            load(open(f"{BASE_DIR}\\models/{name}_mlp.joblib", 'rb')),
-            load(open(f"{BASE_DIR}\\models/{name}_std.joblib", 'rb')),
-            load(open(f"{BASE_DIR}\\models/{name}_cols.joblib", 'rb'))
-        ]
-    return models
-
-def classify_model(data, model, std, cols):
-    X = pd.DataFrame(std.transform(data[cols]), columns = cols, index = data.index)
-    y_pred = model.predict(X) 
-    pred=images_pred(y_pred)
-    return pred
-    
-def classify_img(data, models):
-    pred = {
-        'normal': 0,
-        'fatty': 0,
-        'cirrhosis': 0
-    }
-    for key in models.keys():
-        model, std, cols = models[key]
-        pred[classify_model(data, model, std, cols)] += 1
-    result = max(pred, key=pred.get)
-    if pred[result] == 1:
-        return "abstain"
-    return result
-
-def status(path):
-    # try:
-    BASE_DIR = Path(__file__).resolve().parent.parent
-    name = f'{BASE_DIR}\\media\\scans\\' + str(path)
-    img = sitk.ReadImage(name, sitk.sitkUInt8)
-    models = loadmodel()
-    data = pd.DataFrame(feature_extraction(img, [(155,94), (94,94)]))
-    
-    result = classify_img(data, models)
-    return result
-    # except ValueError as e: 
-    #     return Response(e.args[0], 400) 
-
-def images_pred(y_pred):
-    count = 0
-    prediction = {}
-
-    for i in y_pred:
-        if i not in prediction.keys():
-            prediction[i]=1
-        else: prediction[i]+=1
-
-    return max(prediction, key=prediction.get)
-
-def testform(request):
-    if request.method == 'POST':
-        form = ImageForm(request.POST, request.FILES)
-        
-        result = status('s')
-        if form.is_valid():
-            img_obj = form.cleaned_data['scan']
-            # form.save()
-            # img_obj = form.instance
-            return render(request, 'testform.html', {'form' : form, 'img_obj': img_obj, 'result' : result})
-    form = ImageForm
-    return render(request, 'testform.html', {'form': form})
-
 def index(request):
     return render(request, 'index.html')
     
 def index(request):
     return render(request, 'index.html')
-
-def get_prediction(request, id):
-    if request.method == 'POST':
-        form = ImageForm(request.POST, request.FILES)
-        if form.is_valid():
-            # return redirect('patients')
-            path = form.cleaned_data['scan']
-            form.save()
-            result = status(path)
-            patient = Patient.objects.get(id=id)
-            request.session['result'] = result
-            request.session['path'] = str(path)
-            return redirect('addreport', id)
-    form = ImageForm
-    context = {'form' : form}
-    return render(request, 'classify.html', {'form' : form})
 
 def addreport(request, id):
     if request.method == 'POST':
@@ -234,7 +155,6 @@ def addpatient(request):
             query = Patient(patient_name=name, birth_date=birthdate, phone_num=phoneno, password=password, username=username, assigned_doctor=doctor)
             query.save()
             return redirect('patients')
-        
     return render(request, 'addPatient.html')
 
 def adddoctor(request):
@@ -322,6 +242,131 @@ def logout(request):
     except KeyError:
         pass
     return redirect('login')
+
+def error(request):
+    return render(request, 'error.html')
+
+def get_prediction(request, id):
+    if request.method == 'POST':
+        form = ImageForm(request.POST, request.FILES)
+        if form.is_valid():
+            # return redirect('patients')
+            path = form.cleaned_data['scan']
+            form.save()
+            result = status(path)
+            # if result is None:
+                # return redirect('error')
+                
+            request.session['result'] = result
+            request.session['path'] = str(path)
+            return redirect('addreport', id)
+    form = ImageForm
+    return render(request, 'classify.html', {'form' : form})
+
+def status(path):
+    # try:
+    name = f'{BASE_DIR}\\media\\scans\\' + str(path)
+    img = sitk.ReadImage(name, sitk.sitkUInt8)
+    cnn_model = Model()
+    np_image = sitk.GetArrayFromImage(img)
+    # try:
+    mask,anno = cnn_model(np_image.reshape(np_image.shape[0], np_image.shape[1], 1))
+    # except:
+    #     return None
+
+    models = loadmodel()
+    roi_pos = split_image(mask)
+    data = pd.DataFrame(feature_extraction(img, roi_pos))
+    
+    result = classify_img(data, models)
+    return result
+    
+    # except ValueError as e: 
+    #     return Response(e.args[0], 400) 
+
+def split_image(mask, M=32, N=32):
+    
+    roi_pos = []
+    
+    for x in range(0,mask.shape[0],M):
+        for y in range(0,mask.shape[1],N):
+            if 0 not in mask[x:x+M,y:y+N]:
+                roi_pos.append((x,y))
+    return roi_pos
+
+def loadmodel():
+    models = {}
+    classifiers = ['fatty_cirrhosis', 'normal_cirrhosis', 'normal_fatty']
+    for name in classifiers:
+        models[name] = [
+            load(open(f"{BASE_DIR}/models/{name}_mlp.joblib", 'rb')),
+            load(open(f"{BASE_DIR}/models/{name}_std.joblib", 'rb')),
+            load(open(f"{BASE_DIR}/models/{name}_cols.joblib", 'rb'))
+        ]
+    return models
+
+def classify_model(data, model, std, cols):
+    X = pd.DataFrame(std.transform(data[cols]), columns = cols, index = data.index)
+    y_pred = model.predict(X) 
+    pred=images_pred(y_pred)
+    return pred
+    
+def classify_img(data, models):
+    pred = {
+        'normal': 0,
+        'fatty': 0,
+        'cirrhosis': 0
+    }
+    for key in models.keys():
+        model, std, cols = models[key]
+        pred[classify_model(data, model, std, cols)] += 1
+    result = max(pred, key=pred.get)
+    if pred[result] == 1:
+        return "abstain"
+    return result
+
+def images_pred(y_pred):
+    count = 0
+    prediction = {}
+
+    for i in y_pred:
+        if i not in prediction.keys():
+            prediction[i]=1
+        else: prediction[i]+=1
+
+    return max(prediction, key=prediction.get)
+
+class Model:
+    def __init__(self):
+        cfg = get_cfg()
+        cfg.merge_from_file(model_zoo.get_config_file('COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml'))
+        cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
+        cfg.MODEL.WEIGHTS = f"{BASE_DIR}/models/model_final.pth"
+
+        cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
+        self.predictor = DefaultPredictor(cfg)
+
+    def _convert_to_segments_format(self, image, outputs):
+        # https://tech.amikelive.com/node-718/what-object-categories-labels-are-in-coco-dataset/
+        segmentation_bitmap = np.zeros((image.shape[0], image.shape[1]), np.uint32)
+        annotations = []
+        counter = 1
+        instances = outputs['instances']
+        for i in range(len(instances.pred_classes)):
+            category_id = int(instances.pred_classes[i])
+            instance_id = counter
+            mask = instances.pred_masks[i].cpu()
+            segmentation_bitmap[mask] = instance_id
+            annotations.append({'id': instance_id, 'category_id': category_id})
+            counter += 1
+        return segmentation_bitmap, annotations
+
+    def __call__(self, image):
+        image = np.array(image)
+        outputs = self.predictor(image)
+        label, label_data = self._convert_to_segments_format(image, outputs)
+
+        return label, label_data
 
 def dist(p, q):
     return np.linalg.norm(np.array(p)-np.array(q)) 
