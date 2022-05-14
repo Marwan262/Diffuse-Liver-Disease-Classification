@@ -1,3 +1,5 @@
+from os import path
+from pathlib import Path
 from tkinter import Y
 from django.forms import ImageField
 from rest_framework.response import Response
@@ -33,13 +35,15 @@ import sklearn
 import pandas as pd
 
 def loadmodel():
+    BASE_DIR = Path(__file__).resolve().parent.parent
+    # name = f'{BASE_DIR}\\media\\scans\\' + str(path)
     models = {}
     classifiers = ['fatty_cirrhosis', 'normal_cirrhosis', 'normal_fatty']
     for name in classifiers:
         models[name] = [
-            load(open(f"I:/_Marwan Documents/Grad/Django 2/fork/WebApp/models/{name}_mlp.joblib", 'rb')),
-            load(open(f"I:/_Marwan Documents/Grad/Django 2/fork/WebApp/models/{name}_std.joblib", 'rb')),
-            load(open(f"I:/_Marwan Documents/Grad/Django 2/fork/WebApp/models/{name}_cols.joblib", 'rb'))
+            load(open(f"{BASE_DIR}\\models/{name}_mlp.joblib", 'rb')),
+            load(open(f"{BASE_DIR}\\models/{name}_std.joblib", 'rb')),
+            load(open(f"{BASE_DIR}\\models/{name}_cols.joblib", 'rb'))
         ]
     return models
 
@@ -65,7 +69,8 @@ def classify_img(data, models):
 
 def status(path):
     # try:
-    name = 'I:\\_Marwan Documents\\Grad\\Django 2\\fork\\WebApp\\media\\scans\\' + str(path)
+    BASE_DIR = Path(__file__).resolve().parent.parent
+    name = f'{BASE_DIR}\\media\\scans\\' + str(path)
     img = sitk.ReadImage(name, sitk.sitkUInt8)
     models = loadmodel()
     data = pd.DataFrame(feature_extraction(img, [(155,94), (94,94)]))
