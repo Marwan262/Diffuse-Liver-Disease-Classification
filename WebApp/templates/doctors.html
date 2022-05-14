@@ -22,19 +22,22 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Name</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tfoot>
                             <tr>
                                 <th>ID</th>
                                 <th>Name</th>
+                                <th></th>
                             </tr>
                         </tfoot>
                         <tbody>
                             {% for doctor in doctors %}
                             <tr>
                                 <th>{{doctor.id}}</th>
-                                <th><a href="{{patient.id}}">{{doctor.name}}</a></th>
+                                <th><a href="{{doctor.id}}">{{doctor.name}}</a></th>
+                                <th><a href="{{doctor.id}}"><span class="fa fa-arrow-right fa-lg"></span></th>
                             </tr>
                             {% endfor %}
                         </tbody>

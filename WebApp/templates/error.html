@@ -1,0 +1,28 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+{% load static %}
+<div id="layoutSidenav_content">
+    <main>
+        <div id="layoutError_content">
+            <main>
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-6">
+                            <div class="text-center mt-4">
+                                <h1 class="display-1">500</h1>
+                                <p class="lead">GPU failed, please try again. <br>Contact an admin if problem persists.</p>
+                                <a href="{% url 'patients' %}">
+                                    <i class="fas fa-arrow-left me-1"></i>
+                                    Return to patient list.
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </main>
+</div>
+{% endblock content %}

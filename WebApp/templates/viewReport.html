@@ -31,8 +31,7 @@
 
                             <dt class="col-6">Date</dt>
                             <dd id="date" name="date" class="col-6 date">{{report.date}}</dd>
-                            <dd id="dateE" style="display: none;" class="col-6"><input type="date" value="{{report.date}}" name="dateE" required></dd>
-
+                            
                             <dt class="col-6">Notes</dt>
                             <dd id="notes" class="col-6 notes" name="notes">{{report.notes}}</dd>
                             <dd id="notesE" style="display: none;" class="col-6"><input type="text" name="notesE" value="{{report.notes}}" required></dd>
@@ -40,22 +39,29 @@
                             <dt class="col-6">Classification</dt>
                             <dd id="classification" class="col-6 classification" name="classification">{{report.classification}}</dd>
                             <dd id="classificationE" style="display: none;" class="col-6"><input type="text" name="classificationE" value="{{report.classification}}" required></dd>
-
-                            <!-- <!-- <dt class="col-6">Scan</dt> -->
-                            <!-- <dd id="scan" class="col-6 "><img src="/media/scans/{{report.image}}" alt="Logo" height="250" width="250"></dd> -->
-                            <dt class="col-6"><button onclick="toggleEditReport()"><i class="fas fa-edit "></i></button></dt>
+                            
+                            <dt id="scan" class="col-6 "><img src="/media/scans/{{report.image}}" alt="scan" height="400" width="400"></dt>
+                            <dt class="col-6"></dt>
                             <dt id="editSubmit" style="display: none;" class="col-6"><input type="submit" name="edit" id=""></dt>
+
                         </dl>
                     </form>
+                    <button onclick="toggleEditReport()"><i class="fas fa-edit "></i></button>
                 </div>
             </div>
             <div class="col-12"></div>
         </div>
         <div class="col-md-12">
         </div>
+        
         <div class="col-md-12 mt-0">
+            {% if request.session.role == 'admin' or request.session.role == 'doctor'%}
             <a href="{% url 'deletereport' report.id %}">
-                <button onclick="" type="submit" class="btn btn-danger">Archive Report</button>
+                <button class="btn btn-danger">Delete Report</button>
+            </a>
+            {% endif %}
+            <a href="{% url 'pdf' report.id %}">
+                <button class="btn btn-success">Download PDF</button>
             </a>
         </div>
     </main>

@@ -16,6 +16,8 @@ window.addEventListener('DOMContentLoaded', event => {
 
 });
 
+
+
 function validateName() {
     let name = document.forms["addForm"]["name"].value;
     if (/\d/.test(name)) {
@@ -70,19 +72,21 @@ function toggleCheckbox() {
     }
 }
 
-$( document ).ready(function() {
-    var w = window.innerWidth;
-   
-    if(w > 767){
-        $('#menu-jk').scrollToFixed();
-    }else{
-        $('#menu-jk').scrollToFixed();
-    }
-    
-})
+function init() {
+    $('textarea#tiny').tinymce({
+        height: 500,
+        width: 650,
+        menubar: false,
+        plugins: [
+           'a11ychecker','advlist','advcode','advtable','autolink','checklist','export',
+           'lists','link','image','charmap','preview','anchor','searchreplace','visualblocks',
+           'powerpaste','fullscreen','formatpainter','insertdatetime','media','table','help','wordcount'
+        ],
+        toolbar: 'undo redo | a11ycheck casechange blocks | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist checklist outdent indent | removeformat | code table help'
+      });
+}
 
-
-
+init();
 
 $(document).ready(function(){
 
@@ -111,3 +115,49 @@ $(this).addClass("active");
 
 });
 
+$("#btnPrint").on("click", null,  function () {
+    var divContents = $("#text").html();
+    var divContents0 = $("#text0").html();
+    var divContents1 = $("#text1").html();
+    var divContents2 = $("#text2").html();
+    var divContents3 = $("#text3").html();
+    var divContents4 = $("#text4").html();
+    var divContents5 = $("#text5").html();
+    var divContents6 = $("#text6").html();
+    var divContents7 = $("#text7").html();
+    var divContents8 = $("#text8").html();
+    var printWindow = window.open('', '', 'height=400,width=800');
+    printWindow.document.write('<html><head><title></title>');
+    printWindow.document.write('</head><body >');
+    printWindow.document.write(divContents);
+    printWindow.document.write('<br>');
+    printWindow.document.write(divContents0);
+    printWindow.document.write('<br>');
+    printWindow.document.write('<br>');
+    printWindow.document.write('<br>');
+    printWindow.document.write(divContents1);
+    printWindow.document.write('<br>');
+    printWindow.document.write(divContents2);
+    printWindow.document.write('<br>');
+    printWindow.document.write(divContents3);
+    printWindow.document.write('<br>');
+    printWindow.document.write('<br>');
+    printWindow.document.write(divContents4);
+    printWindow.document.write('<br>');
+    printWindow.document.write('<hr>');
+    printWindow.document.write(divContents5);
+    printWindow.document.write('<br>');
+    printWindow.document.write('<br>');
+    printWindow.document.write(divContents6);
+    printWindow.document.write('<br>');
+    printWindow.document.write('<br>');
+    printWindow.document.write('<br>');
+    printWindow.document.write('<br>');
+    printWindow.document.write(divContents7);
+    printWindow.document.write('<br>');
+    printWindow.document.write(divContents8);
+    printWindow.document.write('<br>');
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.print();
+});

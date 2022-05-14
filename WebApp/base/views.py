@@ -1,7 +1,10 @@
+import time
 from tkinter import Y
 from django.forms import ImageField
 from rest_framework.response import Response
 from rest_framework import viewsets
+from pathlib import Path
+from os import path
 from rest_framework import mixins
 from rest_framework.exceptions import APIException
 from django.db import transaction
@@ -11,7 +14,12 @@ from queue import Empty
 import random
 from rest_framework import status 
 import numpy as np
+from detectron2 import model_zoo
+from detectron2.engine import DefaultPredictor
+from detectron2.config import get_cfg
 from radiomics import glrlm, glcm, firstorder
+
+from WebApp.settings import BASE_DIR
 from .forms import ImageForm
 from skimage.feature import greycomatrix
 from skimage.feature import greycoprops
@@ -25,131 +33,58 @@ from django.http import HttpResponse
 from .models import Patient
 from .models import Doctor
 from .models import Admin
+import torch
 from .models import Report
 from django.contrib.auth.models import User
 from django.contrib import messages
 from joblib import load
 import sklearn
+import logging
 import pandas as pd
 
-def loadmodel():
-    models = {}
-    classifiers = ['fatty_cirrhosis', 'normal_cirrhosis', 'normal_fatty']
-    for name in classifiers:
-        models[name] = [
-            load(open(f"I:/_Marwan Documents/Grad/Django 2/fork/WebApp/models/{name}_mlp.joblib", 'rb')),
-            load(open(f"I:/_Marwan Documents/Grad/Django 2/fork/WebApp/models/{name}_std.joblib", 'rb')),
-            load(open(f"I:/_Marwan Documents/Grad/Django 2/fork/WebApp/models/{name}_cols.joblib", 'rb'))
-        ]
-    return models
-
-def classify_model(data, model, std, cols):
-    X = pd.DataFrame(std.transform(data[cols]), columns = cols, index = data.index)
-    y_pred = model.predict(X) 
-    pred=images_pred(y_pred)
-    return pred
-    
-def classify_img(data, models):
-    pred = {
-        'normal': 0,
-        'fatty': 0,
-        'cirrhosis': 0
-    }
-    for key in models.keys():
-        model, std, cols = models[key]
-        pred[classify_model(data, model, std, cols)] += 1
-    result = max(pred, key=pred.get)
-    if pred[result] == 1:
-        return "abstain"
-    return result
-
-def status(path):
-    # try:
-    name = 'I:\\_Marwan Documents\\Grad\\Django 2\\fork\\WebApp\\media\\scans\\' + str(path)
-    img = sitk.ReadImage(name, sitk.sitkUInt8)
-    models = loadmodel()
-    data = pd.DataFrame(feature_extraction(img, [(155,94), (94,94)]))
-    
-    result = classify_img(data, models)
-    return result
-    # except ValueError as e: 
-    #     return Response(e.args[0], 400) 
-
-def images_pred(y_pred):
-    count = 0
-    prediction = {}
-
-    for i in y_pred:
-        if i not in prediction.keys():
-            prediction[i]=1
-        else: prediction[i]+=1
-
-    return max(prediction, key=prediction.get)
-
-def testform(request):
-    if request.method == 'POST':
-        form = ImageForm(request.POST, request.FILES)
-        
-        result = status('s')
-        if form.is_valid():
-            img_obj = form.cleaned_data['scan']
-            # form.save()
-            # img_obj = form.instance
-            return render(request, 'testform.html', {'form' : form, 'img_obj': img_obj, 'result' : result})
-    form = ImageForm
-    return render(request, 'testform.html', {'form': form})
-
-def index(request):
-    return render(request, 'index.html')
-    
 def index(request):
     return render(request, 'index.html')
 
-def get_prediction(request, id):
-    if request.method == 'POST':
-        form = ImageForm(request.POST, request.FILES)
-        if form.is_valid():
-            # return redirect('patients')
-            path = form.cleaned_data['scan']
-            form.save()
-            result = status(path)
-            patient = Patient.objects.get(id=id)
-            request.session['result'] = result
-            request.session['path'] = str(path)
-            return redirect('addreport', id)
-    form = ImageForm
-    context = {'form' : form}
-    return render(request, 'classify.html', {'form' : form})
+def pdf(request, id):
+    report = Report.objects.get(id = id)
+
+    return render(request, "pdf.html", {'report': report})
+    
+def index(request):
+    return render(request, 'index.html')
 
 def addreport(request, id):
-    if request.method == 'POST':
-        notes = request.POST.get('notes')
-        classification = request.POST.get('classification')
-        doctor = request.session['id']
-        patient = id
-        diagnosis = request.POST.get('diagnosis')
-        Report.objects.create(notes=notes, diagnosis=diagnosis, classification=classification, image=request.session['path'], doctor=doctor, patient=patient)
-        return redirect('patient', id)
-    form = ImageForm
-    patient = Patient.objects.get(id=id)
-    context = {'patient' : patient, 'form' : form}
-    return render(request, 'addReport.html', context) 
+    if 'role' in request.session:
+        if request.session['role'] == 'doctor':
+            if request.method == 'POST':
+                notes = request.POST.get('notes')
+                classification = request.POST.get('classification')
+                doctor = request.session['id']
+                patient = id
+                diagnosis = request.POST.get('diagnosis')
+                Report.objects.create(notes=notes, diagnosis=diagnosis, classification=classification, image=request.session['path'], doctor=doctor, patient=patient)
+                return redirect('patient', id)
+            form = ImageForm
+            patient = Patient.objects.get(id=id)
+            context = {'patient' : patient, 'form' : form}
+            return render(request, 'addReport.html', context) 
  
 def report(request, id):
-    if request.method == 'POST':
-        # return render(request, 'index.html')
-        notes = request.POST.get('notesE')
-        classification = request.POST.get('classificationE')
-        Report.objects.filter(id = id).update(notes = notes, classification = classification)
-        return render(request, 'viewReport.html', {'report' : report}) 
-    report = Report.objects.get(id = id)
-    patient = Patient.objects.get(id=report.patient)
-    doctor = Doctor.objects.get(id=report.doctor)
-    context = {'patient' : patient, 'doctor' : doctor, 'report' : report}
-    return render(request, 'viewReport.html', context) 
+    if 'role' in request.session:
+        if request.session['role'] in ('patient', 'doctor', 'admin'):
+            report = Report.objects.get(id = id)
+            patient = Patient.objects.get(id=report.patient)
+            doctor = Doctor.objects.get(id=report.doctor)
+            if request.method == 'POST':
+                logging.debug("post")
+                notes = request.POST.get('notesE')
+                classification = request.POST.get('classificationE')
+                Report.objects.filter(id = id).update(notes = notes, classification = classification)
+                return render(request, 'viewReport.html', {'report' : report, 'patient' : patient, 'doctor': doctor}) 
+        
+            context = {'patient' : patient, 'doctor' : doctor, 'report' : report}
+            return render(request, 'viewReport.html', context) 
            
-def about(request):
-    return render(request, 'about.html')
 
 def profile(request):
     if 'role' in request.session:
@@ -162,7 +97,6 @@ def profile(request):
     else:
         return render(request, 'login.html')
       
-
 def patients(request):
     if 'role' in request.session:
         if request.session['role'] == 'doctor':
@@ -181,83 +115,105 @@ def patients(request):
         return render(request, 'index.html')
 
 def doctors(request):
-    doctors = Doctor.objects.all()
-    context = {'doctors': doctors}
-    return render(request, 'doctors.html', context)       
-       
-def patient(request, id):
-    if request.method == 'POST':
-        if 'newpass' in request.POST:
-            newpass = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(8))
-            request.session['newpass'] = newpass
-            return redirect('patient', id)
-        elif 'confirmpass' in request.POST:
-            if 'newpass' in request.session:
-                Patient.objects.filter(id=id).update(password=request.session['newpass'])
-                del request.session['newpass']
-            else:
-                return redirect('patient', id)
-    patient = Patient.objects.filter(id=id)
-    reports = Report.objects.filter(patient=id)
-    # doctors = Doctor.objects.filter(id=reports[0].doctor)
-    context1 = {'patients': patients}
-    context2 = {'reports': reports}
-    return render(request, 'viewPatient.html', {'patient':patient[0], 'reports':reports}) 
-       
-def addpatient(request):
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        birthdate = request.POST.get('birthdate')
-        phoneno = request.POST.get('phoneno')
-        error = False
-        if not name or not birthdate or not phoneno:
-            messages.error(request, 'Please fill in all fields.')
-            error = True
-        if any(char.isdigit() for char in name):
-            messages.error(request, 'Name cannot contain numbers.')
-            error = True
-        if len(phoneno)< 10 and phoneno.isnumeric():
-            messages.error(request, 'Please enter a valid phone number.')   
-            error = True
-        if not error:
-            doctor = Doctor.objects.get(id=request.session['id'])
-            N = 8
-            password = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(N))
-            x = name.replace(" ", "")
-            username = x.lower()
+    if 'role' in request.session:
+        if request.session['role'] == 'admin':
+            doctors = Doctor.objects.all()
+            context = {'doctors': doctors}
+            return render(request, 'doctors.html', context)       
 
-            query = Patient(patient_name=name, birth_date=birthdate, phone_num=phoneno, password=password, username=username, assigned_doctor=doctor)
-            query.save()
-            return redirect('patients')
+def doctor(request, id):
+    if 'role' in request.session:
+        if request.session['role'] == 'admin':
+            doctor = Doctor.objects.get(id=id)
+            patients = Patient.objects.filter(assigned_doctor=id)   
+            return render(request, 'viewDoctor.html', {'patients':patients, 'doctor' : doctor}) 
+
+def patient(request, id):
+    if 'role' in request.session:
+        if request.session['role'] in ('doctor', 'admin'):
+            if request.method == 'POST':
+                if 'newpass' in request.POST:
+                    newpass = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(8))
+                    request.session['newpass'] = newpass
+                    return redirect('patient', id)
+                elif 'confirmpass' in request.POST:
+                    if 'newpass' in request.session:
+                        Patient.objects.filter(id=id).update(password=request.session['newpass'])
+                        del request.session['newpass']
+                    else:
+                        return redirect('patient', id)
+            patient = Patient.objects.get(id=id)
+            reports = Report.objects.filter(patient=id)
+            if len(reports) > 0:
+                id = reports[0].doctor
+                doctor = Doctor.objects.get(id=id).name  
+            else:
+                doctor = ''
+            return render(request, 'viewPatient.html', {'patient':patient, 'reports':reports, 'doctor' : doctor}) 
         
-    return render(request, 'addPatient.html')
+def addpatient(request):
+    if 'role' in request.session:
+        if request.session['role'] == 'doctor':
+            if request.method == 'POST':
+                name = request.POST.get('name')
+                birthdate = request.POST.get('birthdate')
+                phoneno = request.POST.get('phoneno')
+                error = False
+                if not name or not birthdate or not phoneno:
+                    messages.error(request, 'Please fill in all fields.')
+                    error = True
+                if any(char.isdigit() for char in name):
+                    messages.error(request, 'Name cannot contain numbers.')
+                    error = True
+                if len(phoneno)< 10 and phoneno.isnumeric():
+                    messages.error(request, 'Please enter a valid phone number.')   
+                    error = True
+                if not error:
+                    doctor = Doctor.objects.get(id=request.session['id'])
+                    N = 8
+                    password = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(N))
+                    x = name.replace(" ", "")
+                    username = x.lower()
+
+                    query = Patient(patient_name=name, birth_date=birthdate, phone_num=phoneno, password=password, username=username, assigned_doctor=doctor)
+                    query.save()
+                    return redirect('patients')
+            return render(request, 'addPatient.html')
 
 def adddoctor(request):
-    if request.method == 'POST':
-        name = request.POST.get('fullname')
-        username = name.replace(" ", "")
-        N = 6
-        password = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(N))
+    if 'role' in request.session:
+        if request.session['role'] == 'admin':
+            if request.method == 'POST':
+                name = request.POST.get('name')
+                username = name.replace(" ", "")
+                N = 6
+                password = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(N))
 
-        query = Doctor(name=name, username=username, password=password)
-        query.save()
-        return redirect('doctors')
-    return render(request, 'addDoctor.html')    
+                query = Doctor(name=name, username=username, password=password)
+                query.save()
+                return redirect('doctors')
+            return render(request, 'addDoctor.html')    
 
 def deletepatient(request, id):
-    Patient.objects.filter(id=id).delete()
+    if 'role' in request.session:
+        if request.session['role'] == 'doctor':
+            Patient.objects.filter(id=id).delete()
 
-    return redirect('patients')
+            return redirect('patients')
 
 def deletedoctor(request, id):
-    Doctor.objects.filter(id=id).delete()
+    if 'role' in request.session:
+        if request.session['role'] == 'admin':
+            Doctor.objects.filter(id=id).delete()
 
-    return redirect('doctors')    
+            return redirect('doctors')    
 
 def deletereport(request, id):
-    Report.objects.filter(id=id).delete()
+    if 'role' in request.session:
+        if request.session['role'] in ('doctor', 'admin'):
+            Report.objects.filter(id=id).delete()
 
-    return redirect('patients')    
+            return redirect('patients')    
 
 def login(request):
     if request.method == 'POST':
@@ -270,7 +226,7 @@ def login(request):
                 request.session['id'] = patient.id
                 request.session['name'] = patient.patient_name
                 request.session['loggedin'] = True
-                return redirect('profile')
+                return redirect('index')
         except Patient.DoesNotExist:
             patient = None
 
@@ -316,7 +272,133 @@ def logout(request):
         del request.session['newpass']
     except KeyError:
         pass
-    return redirect('login')
+    return redirect('index')
+
+def error(request):
+    return render(request, 'error.html')
+
+def get_prediction(request, id):
+    if 'role' in request.session:
+        if request.session['role'] == 'doctor':
+            if request.method == 'POST':
+                form = ImageForm(request.POST, request.FILES)
+                if form.is_valid():
+                    path = form.cleaned_data['scan']
+                    form.save()
+                    result = status(path)
+                    if result is None:
+                        return redirect('error')
+                        
+                    request.session['result'] = result
+                    request.session['path'] = str(path)
+                    return redirect('addreport', id)
+            form = ImageForm
+            return render(request, 'classify.html', {'form' : form})
+
+def status(path):
+    # try:
+    name = f'{BASE_DIR}\\media\\scans\\' + str(path)
+    img = sitk.ReadImage(name, sitk.sitkUInt8)
+    cnn_model = Model()
+    np_image = sitk.GetArrayFromImage(img)
+    try:
+        mask,anno = cnn_model(np_image.reshape(np_image.shape[0], np_image.shape[1], 1))
+    except:
+        return None
+
+    models = loadmodel()
+    roi_pos = split_image(mask)
+    data = pd.DataFrame(feature_extraction(img, roi_pos))
+    
+    result = classify_img(data, models)
+    return result
+    
+    # except ValueError as e: 
+    #     return Response(e.args[0], 400) 
+
+def split_image(mask, M=32, N=32):
+    
+    roi_pos = []
+    
+    for x in range(0,mask.shape[0],M):
+        for y in range(0,mask.shape[1],N):
+            if 0 not in mask[x:x+M,y:y+N]:
+                roi_pos.append((x,y))
+    return roi_pos
+
+def loadmodel():
+    models = {}
+    classifiers = ['fatty_cirrhosis', 'normal_cirrhosis', 'normal_fatty']
+    for name in classifiers:
+        models[name] = [
+            load(open(f"{BASE_DIR}/models/{name}_mlp.joblib", 'rb')),
+            load(open(f"{BASE_DIR}/models/{name}_std.joblib", 'rb')),
+            load(open(f"{BASE_DIR}/models/{name}_cols.joblib", 'rb'))
+        ]
+    return models
+
+def classify_model(data, model, std, cols):
+    X = pd.DataFrame(std.transform(data[cols]), columns = cols, index = data.index)
+    y_pred = model.predict(X) 
+    pred=images_pred(y_pred)
+    return pred
+    
+def classify_img(data, models):
+    pred = {
+        'normal': 0,
+        'fatty': 0,
+        'cirrhosis': 0
+    }
+    for key in models.keys():
+        model, std, cols = models[key]
+        pred[classify_model(data, model, std, cols)] += 1
+    result = max(pred, key=pred.get)
+    if pred[result] == 1:
+        return "abstain"
+    return result
+
+def images_pred(y_pred):
+    count = 0
+    prediction = {}
+
+    for i in y_pred:
+        if i not in prediction.keys():
+            prediction[i]=1
+        else: prediction[i]+=1
+
+    return max(prediction, key=prediction.get)
+
+class Model:
+    def __init__(self):
+        cfg = get_cfg()
+        cfg.merge_from_file(model_zoo.get_config_file('COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml'))
+        cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
+        cfg.MODEL.WEIGHTS = f"{BASE_DIR}/models/model_final.pth"
+
+        cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
+        self.predictor = DefaultPredictor(cfg)
+
+    def _convert_to_segments_format(self, image, outputs):
+        # https://tech.amikelive.com/node-718/what-object-categories-labels-are-in-coco-dataset/
+        segmentation_bitmap = np.zeros((image.shape[0], image.shape[1]), np.uint32)
+        annotations = []
+        counter = 1
+        instances = outputs['instances']
+        for i in range(len(instances.pred_classes)):
+            category_id = int(instances.pred_classes[i])
+            instance_id = counter
+            mask = instances.pred_masks[i].cpu()
+            segmentation_bitmap[mask] = instance_id
+            annotations.append({'id': instance_id, 'category_id': category_id})
+            counter += 1
+        return segmentation_bitmap, annotations
+
+    def __call__(self, image):
+        image = np.array(image)
+        outputs = self.predictor(image)
+        label, label_data = self._convert_to_segments_format(image, outputs)
+
+        return label, label_data
 
 def dist(p, q):
     return np.linalg.norm(np.array(p)-np.array(q)) 
