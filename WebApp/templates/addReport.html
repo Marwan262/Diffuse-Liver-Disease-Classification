@@ -36,14 +36,14 @@
                         <!-- <dt class="col-6">Diagnosis</dt> -->
                         <!-- <dd class="col-6"><input id="diagnosis" name="diagnosis" type="text" disabled value="{{request.session.result}}"></dd>
                         <dd><label style="padding-right: 20px;" for="">Change Diagnosis</label><input type="checkbox" onclick="toggleCheckbox()" id="diagnosisCheck" name="diagnosisCheck"></dd> -->
+                        <dt class="col-6">Scan</dt>
+                        <dd class="col-6"><img src="/media/scans/{{request.session.path}}" height="350" max-width="350"></dd>
+                        <dd class="col-6 mt-2">
 
                         <dt class="col-6">Notes and Comments</dt>
                         <dd class="col-6">
-                        <textarea id="tiny" name="notes" width="500"></textarea></dd>
+                        <textarea id="tiny" name="notes" height="200" width="250"></textarea></dd>
 
-                        <dt class="col-6">Scan</dt>
-                        <dd class="col-6"><img src="/media/scans/{{request.session.path}}" height="300" width="300"></dd>
-                        <dd class="col-6 mt-2">
                         <input name="form" type="submit">
                         </dd>
                     </form>

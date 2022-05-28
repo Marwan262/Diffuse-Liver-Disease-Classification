@@ -371,6 +371,7 @@ def images_pred(y_pred):
 class Model:
     def __init__(self):
         cfg = get_cfg()
+        cfg.MODEL.DEVICE='cpu'
         cfg.merge_from_file(model_zoo.get_config_file('COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml'))
         cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
         cfg.MODEL.WEIGHTS = f"{BASE_DIR}/models/model_final.pth"
