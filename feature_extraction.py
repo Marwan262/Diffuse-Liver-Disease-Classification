@@ -142,8 +142,6 @@ def feature_extraction(img, roi_pos):
         glrlmFeatures = glrlm.RadiomicsGLRLM(img, mask)
         glrlmFeatures.enableAllFeatures()
         results = glrlmFeatures.execute()
-        features['LongRunEmphasis'] = results['LongRunEmphasis'].item()
-        features['RunPercentage'] = results['RunPercentage'].item()
         for col in results.keys():
             features[col] = results[col].item()
 
@@ -168,10 +166,8 @@ def build_dataframe(images):
 
     for name, img, cls, mask in images:
         feat_arr = feature_extraction(img, mask)
-        count = 1
         for row in feat_arr:
             row['name'] = name
-            count += 1
             row['target'] = cls
             data = data.append(row,ignore_index=True)
     return data
