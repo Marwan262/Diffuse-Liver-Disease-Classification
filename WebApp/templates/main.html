@@ -61,13 +61,13 @@
                         {% endif %}
                         {% if request.session.loggedin %}
                         <a class="nav-link" href="{% url 'logout' %}">
-                            <div class="sb-nav-link-icon"><i class="fas fa-door"></i></div>
+                            <div class="sb-nav-link-icon"><i class="fas fa-door-open"></i></div>
                             Logout
                         </a>
                         {% endif %}
                         {% if not request.session.loggedin %}
                         <a class="nav-link" href="{% url 'logout' %}">
-                            <div class="sb-nav-link-icon"><i class="fas fa-door"></i></div>
+                            <div class="sb-nav-link-icon"><i class="fas fa-door-open"></i></div>
                             Login
                         </a>
                         {% endif %}
