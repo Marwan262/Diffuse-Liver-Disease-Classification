@@ -75,10 +75,10 @@ function toggleCheckbox() {
 function init() {
     $('textarea#tiny').tinymce({
         height: 500,
-        width: 650,
+        width: 500,
         menubar: false,
         plugins: [
-           'a11ychecker','advlist','advcode','advtable','autolink','checklist','export',
+            'a11ychecker','advlist','advcode','advtable','autolink','checklist','export',
            'lists','link','image','charmap','preview','anchor','searchreplace','visualblocks',
            'powerpaste','fullscreen','formatpainter','insertdatetime','media','table','help','wordcount'
         ],
