@@ -31,13 +31,6 @@
 
                             <dt class="col-6">Date</dt>
                             <dd id="date" name="date" class="col-6 date">{{report.date}}</dd>
-                            
-                            <dt class="col-6">Notes</dt>
-                            <dd id="notes" class="col-6 notes" name="notes">{{report.notes|safe}}</dd>
-    
-
-                            <dd id="notesE" style="display: none;">
-                            <textarea id="tiny" type="text" name="notesE" required>{{report.notes|safe}}</textarea></dd>
 
                             <dt class="col-6">Classification</dt>
                             <dd id="classification" class="col-6 classification" name="classification">{{report.classification}}</dd>
@@ -45,6 +38,13 @@
                             
                             <dt id="scan" class="col-6 "><img src="/media/scans/{{report.image}}" alt="scan" height="400" width="400"></dt>
                             <dt class="col-6"></dt>
+
+                            <dt class="col-6">Notes</dt>
+                            <dd id="notes" class="col-6 notes" name="notes">{{report.notes|safe}}</dd>
+
+                            <dd id="notesE" style="display: none;">
+                            <textarea id="tiny" type="text" name="notesE" required>{{report.notes|safe}}</textarea></dd>
+                            
                             <dt id="editSubmit" style="display: none;" class="col-6"><input type="submit" name="edit" id=""></dt>
 
                         </dl>

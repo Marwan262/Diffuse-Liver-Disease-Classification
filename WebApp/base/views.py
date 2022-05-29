@@ -207,7 +207,7 @@ def adddoctor(request):
 
                 query = Doctor(name=name, username=username, password=password)
                 query.save()
-                return redirect('doctors')
+                return render(request, 'viewDoctor.html',  {'username':username, 'password':password})
             return render(request, 'addDoctor.html')    
 
 # deletes patient from database
