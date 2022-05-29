@@ -68,37 +68,39 @@
                         </tbody>
                     </table>
                 </div>
-            </div>{% if request.session.role == 'doctor' %}
+            </div>
+            {% if request.session.role == 'doctor' %}
             <a href="{% url 'classify' patient.id %}">
                 <button onclick="" type="submit" class="btn btn-primary">Generate Report</button>
             </a>
             {% endif %}
             <div class="col-md-2 mt-5">
-                <a href="{% url 'deletepatient' patient.id %}">
+                <a href="{% url 'deletepatient' patient.id %}" class="float-right">
                     <button onclick="" type="submit" class="btn btn-danger">Archive Patient</button>
                 </a>
             </div>
         </div>
         
-        {% if request.session.role == 'admin'%}
-            <div class="row row-content">
+        <!-- {% if request.session.role == 'admin'%}
+            <div class="row">
                 <form method="post">
                     {% csrf_token %}
-                    <div class="col-md-5">
+                    <div class="col-3">
                         <button name="newpass" type="submit" class="btn btn-success">Generate New Password</button>
                     </div>
+                    <div class="col-3"></div>
                     {% if 'newpass' in request.session %}
-                    <div>
+                    <div class="col-3">
                         <input hidden name="newpass" id="newpass" type="text" value="{{ newpass }}">
                         <button name="confirmpass" type="submit" class="btn btn-warning">Confirm password</button>
                     </div>
-                    <div class="col-md-5">
-                        <text class="passtext">{{request.session.newpass}}</text>
+                    <div class="col-3">
+                        <text style="padding: 5px; border: 1px solid red;" class="passtext">{{request.session.newpass}}</text>
                     </div>
                     {% endif %}
                 </form>
             </div>
-        {% endif %}
+        {% endif %} -->
     </main>
 </div>
 

@@ -1,3 +1,4 @@
+from datetime import datetime
 import time
 from tkinter import Y
 from django.forms import ImageField
@@ -42,17 +43,26 @@ import sklearn
 import logging
 import pandas as pd
 
+# returns index page
 def index(request):
     return render(request, 'index.html')
 
+# compiles data to be written in pdf page, returns pdf page
 def pdf(request, id):
     report = Report.objects.get(id = id)
+    doctor = Doctor.objects.get(id = report.doctor)
+    patient = Patient.objects.get(id = report.patient)
 
-    return render(request, "pdf.html", {'report': report})
-    
+    today = datetime.today()
+    age = today.year - patient.birth_date.year - ((today.month, today.day) < (patient.birth_date.month, patient.birth_date.day))
+
+    return render(request, "pdf.html", {'report': report, 'patient' : patient ,'doctor' : doctor, 'age' : age})
+
+# returns index/home page
 def index(request):
     return render(request, 'index.html')
 
+# returns addReport page, submits add report form into database
 def addreport(request, id):
     if 'role' in request.session:
         if request.session['role'] == 'doctor':
@@ -68,7 +78,8 @@ def addreport(request, id):
             patient = Patient.objects.get(id=id)
             context = {'patient' : patient, 'form' : form}
             return render(request, 'addReport.html', context) 
- 
+
+# returns viewReport page, submits edited report to database
 def report(request, id):
     if 'role' in request.session:
         if request.session['role'] in ('patient', 'doctor', 'admin'):
@@ -85,7 +96,7 @@ def report(request, id):
             context = {'patient' : patient, 'doctor' : doctor, 'report' : report}
             return render(request, 'viewReport.html', context) 
            
-
+# returns profile page
 def profile(request):
     if 'role' in request.session:
         if request.session['role'] == 'patient':
@@ -96,7 +107,8 @@ def profile(request):
             return redirect('index')
     else:
         return render(request, 'login.html')
-      
+
+# returns patients page
 def patients(request):
     if 'role' in request.session:
         if request.session['role'] == 'doctor':
@@ -113,7 +125,7 @@ def patients(request):
             return render(request, 'index.html')
     else:
         return render(request, 'index.html')
-
+# returns doctors page
 def doctors(request):
     if 'role' in request.session:
         if request.session['role'] == 'admin':
@@ -121,6 +133,7 @@ def doctors(request):
             context = {'doctors': doctors}
             return render(request, 'doctors.html', context)       
 
+# returns viewDoctor page
 def doctor(request, id):
     if 'role' in request.session:
         if request.session['role'] == 'admin':
@@ -128,6 +141,7 @@ def doctor(request, id):
             patients = Patient.objects.filter(assigned_doctor=id)   
             return render(request, 'viewDoctor.html', {'patients':patients, 'doctor' : doctor}) 
 
+# returns viewPatient page, submits new password to database
 def patient(request, id):
     if 'role' in request.session:
         if request.session['role'] in ('doctor', 'admin'):
@@ -150,7 +164,8 @@ def patient(request, id):
             else:
                 doctor = ''
             return render(request, 'viewPatient.html', {'patient':patient, 'reports':reports, 'doctor' : doctor}) 
-        
+
+# returns addPatient page, submits new patient to database
 def addpatient(request):
     if 'role' in request.session:
         if request.session['role'] == 'doctor':
@@ -180,6 +195,7 @@ def addpatient(request):
                     return redirect('patients')
             return render(request, 'addPatient.html')
 
+# returns addDoctor page, submits new doctor to database
 def adddoctor(request):
     if 'role' in request.session:
         if request.session['role'] == 'admin':
@@ -194,6 +210,7 @@ def adddoctor(request):
                 return redirect('doctors')
             return render(request, 'addDoctor.html')    
 
+# deletes patient from database
 def deletepatient(request, id):
     if 'role' in request.session:
         if request.session['role'] == 'doctor':
@@ -201,6 +218,7 @@ def deletepatient(request, id):
 
             return redirect('patients')
 
+# deletes doctor from database
 def deletedoctor(request, id):
     if 'role' in request.session:
         if request.session['role'] == 'admin':
@@ -208,6 +226,7 @@ def deletedoctor(request, id):
 
             return redirect('doctors')    
 
+# deletes report from database
 def deletereport(request, id):
     if 'role' in request.session:
         if request.session['role'] in ('doctor', 'admin'):
@@ -215,6 +234,7 @@ def deletereport(request, id):
 
             return redirect('patients')    
 
+# returns login page, assigns role, redirects to home/index page
 def login(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -256,13 +276,13 @@ def login(request):
                 admin = None 
 
         if admin == None:
-            # return redirect('login')
             messages.error(request, 'Incorrect credentials.')
     if 'loggedin' in request.session:
         return render(request, 'index.html')
     else :
         return render(request, 'login.html')    
 
+# removes session variables, redirects to login page
 def logout(request):
     try:
         del request.session['role']
@@ -274,9 +294,11 @@ def logout(request):
         pass
     return redirect('index')
 
+# returns error page
 def error(request):
     return render(request, 'error.html')
 
+# returns classify page, passes image through model, returns classification
 def get_prediction(request, id):
     if 'role' in request.session:
         if request.session['role'] == 'doctor':
@@ -295,6 +317,7 @@ def get_prediction(request, id):
             form = ImageForm
             return render(request, 'classify.html', {'form' : form})
 
+# passes image through image segmentation and image prediction
 def status(path):
     # try:
     name = f'{BASE_DIR}\\media\\scans\\' + str(path)
@@ -316,6 +339,7 @@ def status(path):
     # except ValueError as e: 
     #     return Response(e.args[0], 400) 
 
+# splits mask into 32x32 size ROIs
 def split_image(mask, M=32, N=32):
     
     roi_pos = []
@@ -326,6 +350,7 @@ def split_image(mask, M=32, N=32):
                 roi_pos.append((x,y))
     return roi_pos
 
+# loads joblib models
 def loadmodel():
     models = {}
     classifiers = ['fatty_cirrhosis', 'normal_cirrhosis', 'normal_fatty']
@@ -337,12 +362,14 @@ def loadmodel():
         ]
     return models
 
+# returns image prediction
 def classify_model(data, model, std, cols):
     X = pd.DataFrame(std.transform(data[cols]), columns = cols, index = data.index)
     y_pred = model.predict(X) 
     pred=images_pred(y_pred)
     return pred
-    
+
+# returns ROI prediction
 def classify_img(data, models):
     pred = {
         'normal': 0,
@@ -357,8 +384,8 @@ def classify_img(data, models):
         return "abstain"
     return result
 
+# returns image prediction
 def images_pred(y_pred):
-    count = 0
     prediction = {}
 
     for i in y_pred:
@@ -368,7 +395,9 @@ def images_pred(y_pred):
 
     return max(prediction, key=prediction.get)
 
+# CNN segmentation model class
 class Model:
+    # class constructor, initializes CNN model
     def __init__(self):
         cfg = get_cfg()
         cfg.MODEL.DEVICE='cpu'
@@ -379,8 +408,8 @@ class Model:
         cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1
         self.predictor = DefaultPredictor(cfg)
 
+    # converts image into required detectron format
     def _convert_to_segments_format(self, image, outputs):
-        # https://tech.amikelive.com/node-718/what-object-categories-labels-are-in-coco-dataset/
         segmentation_bitmap = np.zeros((image.shape[0], image.shape[1]), np.uint32)
         annotations = []
         counter = 1
@@ -394,6 +423,7 @@ class Model:
             counter += 1
         return segmentation_bitmap, annotations
 
+    # segments image
     def __call__(self, image):
         image = np.array(image)
         outputs = self.predictor(image)
@@ -401,9 +431,11 @@ class Model:
 
         return label, label_data
 
+# returns distance between two points
 def dist(p, q):
     return np.linalg.norm(np.array(p)-np.array(q)) 
 
+# returns diagonal liver length
 def get_length(img, mask):
     # top right, bottom left
     tr_distance = []
@@ -429,6 +461,7 @@ def get_length(img, mask):
 
     return max(dist(top_right, bottom_left), dist(top_left, bottom_right))
 
+# extracts 32x32 area of image, creates mask of area
 def extract_roi(img, start , size = (32,32)):
     img = sitk.GetArrayFromImage(img)
     roi = img[start[0]:start[0]+size[0],start[1]:start[1]+size[1]]
@@ -436,7 +469,7 @@ def extract_roi(img, start , size = (32,32)):
     mask[start[0]:start[0]+size[0],start[1]:start[1]+size[1]] = 1
     return roi, mask
 
-
+# extracts features from image
 def feature_extraction(img, roi_pos):
     roi_mask_arr = []
     for pos in roi_pos:
@@ -485,13 +518,12 @@ def feature_extraction(img, roi_pos):
 
         features['length'] = length
 
-        # features[f'mean'] = np.mean(roi)
-        # features[f'variance'] = np.var(roi)
-
         # pyradiomics
         mask = sitk.GetImageFromArray(mask)
+
         # First Order features
         firstOrderFeatures = firstorder.RadiomicsFirstOrder(img, mask)
+
         # firstOrderFeatures.enableFeatureByName('Mean', True)
         firstOrderFeatures.enableAllFeatures()
         results = firstOrderFeatures.execute()
@@ -504,7 +536,7 @@ def feature_extraction(img, roi_pos):
         results = glcmFeatures.execute()
         for col in results.keys():
             features[col] = results[col].item()
-        #
+
         # GLRLM features
         glrlmFeatures = glrlm.RadiomicsGLRLM(img, mask)
         glrlmFeatures.enableAllFeatures()
@@ -518,9 +550,8 @@ def feature_extraction(img, roi_pos):
 
     return feat_arr
 
+# builds dataframe from extracted features
 def build_dataframe(images):
-    # dataframe consists of features of 1 ROI per image
-    # column name roiNum_feature
     data = pd.DataFrame()
 
     for name, img, cls, mask in images:
