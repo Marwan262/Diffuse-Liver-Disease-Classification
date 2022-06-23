@@ -19,8 +19,14 @@
                     <dl class="row">
                         <dt class="col-6">Full Name</dt>
                         <dd class="col-6">{{patient.patient_name}}</dd>
+                        <dt class="col-6">E-Mail</dt>
+                        <dd class="col-6">{{patient.email}}</dd>
+                        {% if request.session.role == 'admin' %}
                         <dt class="col-6">Username</dt>
                         <dd class="col-6">{{patient.username}}</dd>
+                        <dt class="col-6">Password</dt>
+                        <dd class="col-6">{{patient.password}}</dd>
+                        {% endif %}
                         <dt class="col-6">Assigned Doctor</dt>
                         <dd class="col-6">{{patient.assigned_doctor}}</dd>
                         <dt class="col-6">Phone No.</dt>
@@ -73,22 +79,23 @@
             <a href="{% url 'classify' patient.id %}">
                 <button onclick="" type="submit" class="btn btn-primary">Generate Report</button>
             </a>
-            {% endif %}
-            <div class="col-md-2 mt-5">
+            
+            <div class="col-md-2 mt-5 ">
                 <a href="{% url 'deletepatient' patient.id %}" class="float-right">
                     <button onclick="" type="submit" class="btn btn-danger">Archive Patient</button>
                 </a>
             </div>
+            {% endif %}
         </div>
         
-        <!-- {% if request.session.role == 'admin'%}
+        {% if request.session.role == 'admin'%}
             <div class="row">
                 <form method="post">
                     {% csrf_token %}
-                    <div class="col-3">
+                    <div class="col-3 px-4">
                         <button name="newpass" type="submit" class="btn btn-success">Generate New Password</button>
                     </div>
-                    <div class="col-3"></div>
+                    <!-- <div class="col-3"></div>
                     {% if 'newpass' in request.session %}
                     <div class="col-3">
                         <input hidden name="newpass" id="newpass" type="text" value="{{ newpass }}">
@@ -97,10 +104,10 @@
                     <div class="col-3">
                         <text style="padding: 5px; border: 1px solid red;" class="passtext">{{request.session.newpass}}</text>
                     </div>
-                    {% endif %}
+                    {% endif %} -->
                 </form>
             </div>
-        {% endif %} -->
+        {% endif %}
     </main>
 </div>
 

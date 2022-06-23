@@ -28,6 +28,13 @@ function validateName() {
         document.getElementById("nameError").hidden = true;
 }
 
+function validateEmail() {
+    email = document.getElementById('editEmail');
+    if(!email.match(/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)) {
+
+    }
+}
+
 function validateNumber() {
     let number = document.forms["addForm"]["phoneno"].value;
     if (number.match(/[^$,.\d]/)) {
@@ -70,6 +77,28 @@ function toggleCheckbox() {
     else {
         $("#diagnosis").prop('readonly', true);
     }
+}
+
+function toggleEditProfile() {
+    if ($("#editName").is(":hidden")) {
+        $("#editName").removeAttr('hidden');
+        $("#editEmail").removeAttr('hidden');
+        $("#editPhone").removeAttr('hidden');
+        $("#submitProfile").removeAttr('hidden');
+        $("#name").attr("hidden", true);
+        $("#email").attr("hidden", true);
+        $("#phone").attr("hidden", true);
+    }
+    else {
+        $("#name").removeAttr('hidden');
+        $("#email").removeAttr('hidden');
+        $("#phone").removeAttr('hidden');
+        $("#editName").attr("hidden", true);
+        $("#editEmail").attr("hidden", true);
+        $("#editPhone").attr("hidden", true);
+        $("#submitProfile").attr("hidden", true);
+    }
+    
 }
 
 function init() {

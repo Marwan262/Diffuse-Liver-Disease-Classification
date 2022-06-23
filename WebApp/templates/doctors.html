@@ -22,14 +22,14 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Name</th>
-                                <th></th>
+                                <!-- <th></th> -->
                             </tr>
                         </thead>
                         <tfoot>
                             <tr>
                                 <th>ID</th>
                                 <th>Name</th>
-                                <th></th>
+                                <!-- <th></th> -->
                             </tr>
                         </tfoot>
                         <tbody>
@@ -37,17 +37,18 @@
                             <tr>
                                 <th>{{doctor.id}}</th>
                                 <th><a href="{{doctor.id}}">{{doctor.name}}</a></th>
-                                <th><a href="{{doctor.id}}"><span class="fa fa-arrow-right fa-lg"></span></th>
+                                <!-- <th><a href="{{doctor.id}}"><span class="fa fa-arrow-right fa-lg"></span></th> -->
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
             </div>
+            <a href="{% url 'adddoctor' %}">
+                <button type="submit" class="btn btn-primary float-start">Add Doctor</button>
+            </a>
         </div>
-        <a href="{% url 'adddoctor' %}">
-            <button type="submit" class="btn btn-primary">Add Doctor</button>
-        </a>
+        
     </main>
 </div>
 {% endblock content %}

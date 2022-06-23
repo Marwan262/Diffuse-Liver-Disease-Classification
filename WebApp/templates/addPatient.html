@@ -19,15 +19,27 @@
                                             <dt class="col-6">Full Name</dt>
                                             <dd class="col-6"><input type="text" oninput="validateName()" name="name" required></dd>
                                             <ul hidden id="nameError">
-                                                <li hidden id="nameError"></li>
+                                                <li class="message" hidden id="nameError"></li>
+                                            </ul>
+                                            <dt class="col-6">E-Mail</dt>
+                                            <dd class="col-6"><input type="text" oninput="validateEmail()" name="email"></dd>
+                                            <ul hidden id="emailError">
+                                                <li class="message" hidden id="emailError"></li>
                                             </ul>
                                             <dt class="col-6">Birth Date</dt>
                                             <dd class="col-6"><input type="date" name="birthdate" required></dd>
                                             <dt class="col-6">Phone No.</dt>
                                             <dd class="col-6"><input type="text" oninput="validateNumber()" name="phoneno" required></dd>
                                             <ul hidden id="numberError">
-                                                <li hidden id="numberError"></li>
+                                                <li class="message" hidden id="numberError"></li>
                                             </ul>
+                                            {% if messages %}
+                                            <ul class="px-4">
+                                            {% for message in messages %}
+                                                <li class="message">{{message}}</li>
+                                            {% endfor %}
+                                            </ul>
+                                            {% endif %}
                                             <dt class="col-2"><input type="submit" name="" id=""></dt>
                                         </dl>
                                     </form>

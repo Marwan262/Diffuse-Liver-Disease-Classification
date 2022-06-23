@@ -1,4 +1,5 @@
 from datetime import datetime
+import re
 import time
 from tkinter import Y
 from django.forms import ImageField
@@ -95,11 +96,26 @@ def report(request, id):
         
             context = {'patient' : patient, 'doctor' : doctor, 'report' : report}
             return render(request, 'viewReport.html', context) 
-           
+
+def checkEmail(email):
+    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+    if(re.fullmatch(regex, email)):
+        return True
+
 # returns profile page
 def profile(request):
     if 'role' in request.session:
         if request.session['role'] == 'patient':
+            if request.method == 'POST':
+                name = request.POST.get('editName')
+                email = request.POST.get('editEmail')
+                phone = request.POST.get('editPhone')
+                if not any(str.isdigit(c) for c in name) and phone.isnumeric() and  checkEmail(email):
+                    Patient.objects.filter(id = request.session['id']).update(email = email, patient_name = name, phone_num = phone)
+                else:
+                    patient = Patient.objects.get(id = request.session['id'])
+                    reports = Report.objects.filter(patient = request.session['id'])
+                    return render(request, 'profile.html', {'patient' : patient, 'reports' : reports}) 
             patient = Patient.objects.get(id = request.session['id'])
             reports = Report.objects.filter(patient = request.session['id'])
             return render(request, 'profile.html', {'patient' : patient, 'reports' : reports}) 
@@ -148,14 +164,15 @@ def patient(request, id):
             if request.method == 'POST':
                 if 'newpass' in request.POST:
                     newpass = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(8))
-                    request.session['newpass'] = newpass
+                    Patient.objects.filter(id=id).update(password=newpass)
+                    # request.session['newpass'] = newpass
                     return redirect('patient', id)
-                elif 'confirmpass' in request.POST:
-                    if 'newpass' in request.session:
-                        Patient.objects.filter(id=id).update(password=request.session['newpass'])
-                        del request.session['newpass']
-                    else:
-                        return redirect('patient', id)
+                # elif 'confirmpass' in request.POST:
+                #     if 'newpass' in request.session:
+                #         Patient.objects.filter(id=id).update(password=request.session['newpass'])
+                #         del request.session['newpass']
+                #     else:
+                #         return redirect('patient', id)
             patient = Patient.objects.get(id=id)
             reports = Report.objects.filter(patient=id)
             if len(reports) > 0:
@@ -171,6 +188,7 @@ def addpatient(request):
         if request.session['role'] == 'doctor':
             if request.method == 'POST':
                 name = request.POST.get('name')
+                email = request.POST.get('email')
                 birthdate = request.POST.get('birthdate')
                 phoneno = request.POST.get('phoneno')
                 error = False
@@ -180,7 +198,7 @@ def addpatient(request):
                 if any(char.isdigit() for char in name):
                     messages.error(request, 'Name cannot contain numbers.')
                     error = True
-                if len(phoneno)< 10 and phoneno.isnumeric():
+                if len(phoneno)< 10 or phoneno.isnumeric():
                     messages.error(request, 'Please enter a valid phone number.')   
                     error = True
                 if not error:
@@ -190,7 +208,7 @@ def addpatient(request):
                     x = name.replace(" ", "")
                     username = x.lower()
 
-                    query = Patient(patient_name=name, birth_date=birthdate, phone_num=phoneno, password=password, username=username, assigned_doctor=doctor)
+                    query = Patient(patient_name=name, email=email, birth_date=birthdate, phone_num=phoneno, password=password, username=username, assigned_doctor=doctor)
                     query.save()
                     return redirect('patients')
             return render(request, 'addPatient.html')
@@ -207,7 +225,7 @@ def adddoctor(request):
 
                 query = Doctor(name=name, username=username, password=password)
                 query.save()
-                return render(request, 'viewDoctor.html',  {'username':username, 'password':password})
+                return render(request, 'doctors.html')
             return render(request, 'addDoctor.html')    
 
 # deletes patient from database
@@ -277,6 +295,7 @@ def login(request):
 
         if admin == None:
             messages.error(request, 'Incorrect credentials.')
+            return render(request, 'login.html')  
     if 'loggedin' in request.session:
         return render(request, 'index.html')
     else :
