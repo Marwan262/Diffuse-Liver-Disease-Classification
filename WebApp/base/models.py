@@ -31,8 +31,8 @@ class Admin(models.Model):
 
 class Patient(models.Model):
 
-    M = "MALE"
-    F = "FEMALE"
+    M = "Male"
+    F = "Female"
 
     GENDER_CHOICES = (
         (M, "Male"),
@@ -52,7 +52,7 @@ class Patient(models.Model):
     gender = models.CharField(choices=GENDER_CHOICES, max_length=50, null=True, default='')
     email = models.EmailField(max_length=200, null=True, default='')
     # medical_conditions = ArrayField(models.CharField(max_length=200, blank=True))
-    medical_conditions = models.CharField(max_length = 200, null=True)
+    medical_conditions = models.CharField(max_length = 200, null=True, blank=True)
  
     assigned_doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
     check_in_date = models.DateField(auto_now_add = True)

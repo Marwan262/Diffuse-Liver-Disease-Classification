@@ -12,7 +12,7 @@
                 <li class="breadcrumb-item active"></li>
             </ol>
             <div class="col-12"></div>
-            <div class="card mb-4 col-6"> 
+            <div class="card mb-3 col-6"> 
                 <div class="card-header">
                     <i class="fas fa-user me-1"></i>
                     Report {{report.id}}
@@ -36,7 +36,7 @@
                             <dd id="classification" class="col-6 classification" name="classification">{{report.classification}}</dd>
                             <dd id="classificationE" style="display: none;" class="col-6"><input type="text" name="classificationE" value="{{report.classification}}" required></dd>
                             
-                            <dt id="scan" class="col-6 "><img src="/media/scans/{{report.image}}" alt="scan" height="400" width="400"></dt>
+                            <dt id="scan" class="col-6 "><img src="/media/scans/{{report.image}}" alt="scan" height="350" width="350"></dt>
                             <dt class="col-6"></dt>
 
                             <dt class="col-6">Notes</dt>
@@ -57,14 +57,14 @@
         <div class="col-md-12">
         </div>
         
-        <div class="col-md-12 mt-0">
+        <div class="col-md-12 px-4">
             {% if request.session.role == 'admin' or request.session.role == 'doctor'%}
-            <a href="{% url 'deletereport' report.id %}">
-                <button class="btn btn-danger">Delete Report</button>
-            </a>
-            {% endif %}
             <a href="{% url 'pdf' report.id %}">
                 <button class="btn btn-success">Download PDF</button>
+            </a>
+            {% endif %}
+            <a href="{% url 'deletereport' report.id %}" class="px-4">
+                <button class="btn btn-danger">Delete Report</button>
             </a>
         </div>
     </main>

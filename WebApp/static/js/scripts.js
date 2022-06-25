@@ -16,8 +16,6 @@ window.addEventListener('DOMContentLoaded', event => {
 
 });
 
-
-
 function validateName() {
     let name = document.forms["addForm"]["name"].value;
     if (/\d/.test(name)) {
@@ -69,13 +67,23 @@ function toggleEditReport() {
     } 
 }
 
-function toggleCheckbox() {
-    x = document.getElementById('diagnosisCheck');
-    if (x.checked == true) {
-        $("#diagnosis").prop('readonly', false);
+function submitAnchor() {
+    $("#addCondition").click()
+}
+
+function toggleAddCondition() {
+    
+    if ($("#confirm").is(":hidden")) {
+        $("#add").attr("hidden", true);
+        $("#confirm").attr("hidden", false);
+        $("#addHR").attr("hidden", false);
+        $("#addInput").attr("hidden", false);
     }
     else {
-        $("#diagnosis").prop('readonly', true);
+        $("#add").attr("hidden", false);
+        $("#confirm").attr("hidden", true);
+        $("#addHR").attr("hidden", true);
+        $("#addInput").attr("hidden", true);
     }
 }
 
@@ -98,8 +106,19 @@ function toggleEditProfile() {
         $("#editPhone").attr("hidden", true);
         $("#submitProfile").attr("hidden", true);
     }
-    
 }
+
+function toggleCheckbox() {
+    x = document.getElementById('diagnosisCheck');
+    if (x.checked == true) {
+        $("#diagnosis").prop('readonly', false);
+    }
+    else {
+        $("#diagnosis").prop('readonly', true);
+    }
+}
+
+
 
 function init() {
     $('textarea#tiny').tinymce({
@@ -138,9 +157,9 @@ $(document).ready(function(){
     });
     
     if ($(".filter-button").removeClass("active")) {
-$(this).removeClass("active");
-}
-$(this).addClass("active");
+        $(this).removeClass("active");
+        }
+        $(this).addClass("active");
 
 });
 

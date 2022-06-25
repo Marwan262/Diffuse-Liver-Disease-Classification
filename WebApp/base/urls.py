@@ -20,6 +20,7 @@ urlpatterns = [
     path('deletepatient/<int:id>/', views.deletepatient, name = "deletepatient"),
     path('deletedoctor/<int:id>/', views.deletedoctor, name = "deletedoctor"),
     path('deletereport/<int:id>/', views.deletereport, name = "deletereport"),
+    path('deletecondition/<str:condition>/<int:id>/', views.deletecondition, name = "deletecondition"),
     path('login/', views.login, name = "login"),
     path('logout/', views.logout, name = "logout"),
     path('profile/', views.profile, name = "profile"),

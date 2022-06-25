@@ -115,10 +115,17 @@ def profile(request):
                 else:
                     patient = Patient.objects.get(id = request.session['id'])
                     reports = Report.objects.filter(patient = request.session['id'])
-                    return render(request, 'profile.html', {'patient' : patient, 'reports' : reports}) 
+                    if len(reports) > 0:
+                        id = reports[0].doctor
+                        doctor = Doctor.objects.get(id=id).name
+                    return render(request, 'profile.html', {'patient' : patient, 'doctor' : doctor, 'reports' : reports}) 
             patient = Patient.objects.get(id = request.session['id'])
             reports = Report.objects.filter(patient = request.session['id'])
-            return render(request, 'profile.html', {'patient' : patient, 'reports' : reports}) 
+            conditions = patient.medical_conditions.split(',')
+            if len(reports) > 0:
+                id = reports[0].doctor
+                doctor = Doctor.objects.get(id=id).name  
+            return render(request, 'profile.html', {'patient' : patient, 'doctor' : doctor, 'conditions' : conditions, 'reports' : reports}) 
         else :
             return redirect('index')
     else:
@@ -165,22 +172,31 @@ def patient(request, id):
                 if 'newpass' in request.POST:
                     newpass = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(8))
                     Patient.objects.filter(id=id).update(password=newpass)
-                    # request.session['newpass'] = newpass
                     return redirect('patient', id)
-                # elif 'confirmpass' in request.POST:
-                #     if 'newpass' in request.session:
-                #         Patient.objects.filter(id=id).update(password=request.session['newpass'])
-                #         del request.session['newpass']
-                #     else:
-                #         return redirect('patient', id)
+                elif 'addCondition' in request.POST:
+                    newCondition = request.POST.get('newCondition')
+                    patient = Patient.objects.get(id=id)
+                    if patient.medical_conditions:
+                        conditions = patient.medical_conditions.split(',')
+                        conditions.append(newCondition)
+                        conditions = ','.join(conditions)
+                        Patient.objects.filter(id = id).update(medical_conditions = conditions)
+                    else:
+                        Patient.objects.filter(id = id).update(medical_conditions = newCondition)
+                    return redirect('patient', id)
             patient = Patient.objects.get(id=id)
             reports = Report.objects.filter(patient=id)
+            if patient.medical_conditions:
+                conditions = patient.medical_conditions.split(',')
             if len(reports) > 0:
                 id = reports[0].doctor
                 doctor = Doctor.objects.get(id=id).name  
             else:
                 doctor = ''
-            return render(request, 'viewPatient.html', {'patient':patient, 'reports':reports, 'doctor' : doctor}) 
+            if patient.medical_conditions:
+                return render(request, 'viewPatient.html', {'patient':patient, 'conditions' : conditions, 'reports':reports, 'doctor' : doctor}) 
+            else:
+                return render(request, 'viewPatient.html', {'patient':patient, 'reports':reports, 'doctor' : doctor}) 
 
 # returns addPatient page, submits new patient to database
 def addpatient(request):
@@ -198,7 +214,7 @@ def addpatient(request):
                 if any(char.isdigit() for char in name):
                     messages.error(request, 'Name cannot contain numbers.')
                     error = True
-                if len(phoneno)< 10 or phoneno.isnumeric():
+                if len(phoneno) < 11 or not phoneno.isnumeric():
                     messages.error(request, 'Please enter a valid phone number.')   
                     error = True
                 if not error:
@@ -233,7 +249,6 @@ def deletepatient(request, id):
     if 'role' in request.session:
         if request.session['role'] == 'doctor':
             Patient.objects.filter(id=id).delete()
-
             return redirect('patients')
 
 # deletes doctor from database
@@ -241,8 +256,30 @@ def deletedoctor(request, id):
     if 'role' in request.session:
         if request.session['role'] == 'admin':
             Doctor.objects.filter(id=id).delete()
-
             return redirect('doctors')    
+
+def deletecondition(request, condition, id):
+    if 'role' in request.session:
+        if request.session['role'] == 'doctor':
+            patient = Patient.objects.get(id=id)
+            conditions = patient.medical_conditions.split(',')
+            conditions.remove(condition)
+            conditions = ','.join(conditions)
+            Patient.objects.filter(id = id).update(medical_conditions = conditions)
+            reports = Report.objects.filter(patient=id)
+            if patient.medical_conditions:
+                conditions = patient.medical_conditions.split(',')
+            if len(reports) > 0:
+                doc_id = reports[0].doctor
+                doctor = Doctor.objects.get(id=doc_id).name  
+            else:
+                doctor = ''
+            return redirect('patient', id)
+            return render(request, 'viewPatient.html', {'patient':patient, 'conditions' : conditions, 'reports':reports, 'doctor' : doctor})
+            if patient.medical_conditions:
+                return render(request, 'viewPatient.html', {'patient':patient, 'conditions' : conditions, 'reports':reports, 'doctor' : doctor}) 
+            else:
+                return render(request, 'viewPatient.html', {'patient':patient, 'reports':reports, 'doctor' : doctor}) 
 
 # deletes report from database
 def deletereport(request, id):
@@ -391,9 +428,9 @@ def classify_model(data, model, std, cols):
 # returns ROI prediction
 def classify_img(data, models):
     pred = {
-        'normal': 0,
-        'fatty': 0,
-        'cirrhosis': 0
+        'Normal': 0,
+        'Fatty Liver Disease': 0,
+        'Liver Cirrhosis': 0
     }
     for key in models.keys():
         model, std, cols = models[key]
