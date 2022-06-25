@@ -1,3 +1,4 @@
+
 from distutils.command.upload import upload
 from time import strftime
 from django.db import models
@@ -12,6 +13,7 @@ class Doctor(models.Model):
     name = models.CharField(max_length = 200)
     username = models.CharField(max_length = 200)
     password = models.CharField(max_length = 200, null=True)
+    email = models.EmailField(max_length=200, null=True, default='')
     assigned_patients = models.TextField(null = True, blank = True)
     role = models.CharField(max_length=200, default="doctor")
 
@@ -28,11 +30,29 @@ class Admin(models.Model):
         return self.name
 
 class Patient(models.Model):
+
+    M = "Male"
+    F = "Female"
+
+    GENDER_CHOICES = (
+        (M, "Male"),
+        (F, "Female")
+    )
+
+
+    def get_email_default():
+        return '1, 2, 3, 4'.split(', ')
+
+
     patient_name = models.CharField(max_length = 200)
     username = models.CharField(max_length = 200)
     password = models.CharField(max_length = 200, null=True)
     phone_num = models.CharField(max_length = 13)
     birth_date = models.DateField()
+    gender = models.CharField(choices=GENDER_CHOICES, max_length=50, null=True, default='')
+    email = models.EmailField(max_length=200, null=True, default='')
+    # medical_conditions = ArrayField(models.CharField(max_length=200, blank=True))
+    medical_conditions = models.CharField(max_length = 200, null=True, blank=True)
  
     assigned_doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
     check_in_date = models.DateField(auto_now_add = True)

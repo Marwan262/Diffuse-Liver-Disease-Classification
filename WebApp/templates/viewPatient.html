@@ -10,27 +10,61 @@
             <ol class="breadcrumb mb-4">
                 <li class="breadcrumb-item active"></li>
             </ol>
-            <div class="card mb-4"> 
-                <div class="card-header">
-                    <i class="fas fa-user me-1"></i>
-                    {{patient.patient_name}}
+            <div class="row">
+                <div class="card col-md-7 mb-4" style="margin-right: 15px;"> 
+                    <div class="card-header row">
+                        <!-- <i class="fas fa-user me-1""></i> -->
+                        {{patient.patient_name}}
+                    </div>
+                    <div class="card-body">
+                        <dl class="row">
+                            <dt class="col-6">Full Name</dt>
+                            <dd class="col-6">{{patient.patient_name}}</dd>
+                            <dt class="col-6">E-Mail</dt>
+                            <dd class="col-6">{{patient.email}}</dd>
+                            {% if request.session.role == 'admin' %}
+                            <dt class="col-6">Username</dt>
+                            <dd class="col-6">{{patient.username}}</dd>
+                            <dt class="col-6">Password</dt>
+                            <dd class="col-6">{{patient.password}}</dd>
+                            {% endif %}
+                            <dt class="col-6">Assigned Doctor</dt>
+                            <dd class="col-6">{{patient.assigned_doctor}}</dd>
+                            <dt class="col-6">Phone No.</dt>
+                            <dd class="col-6">{{patient.phone_num}}</dd>
+                            <dt class="col-6">Date of Birth</dt>
+                            <dd class="col-6">{{patient.birth_date}}</dd>
+                        </dl>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <dl class="row">
-                        <dt class="col-6">Full Name</dt>
-                        <dd class="col-6">{{patient.patient_name}}</dd>
-                        <dt class="col-6">Username</dt>
-                        <dd class="col-6">{{patient.username}}</dd>
-                        <dt class="col-6">Assigned Doctor</dt>
-                        <dd class="col-6">{{patient.assigned_doctor}}</dd>
-                        <dt class="col-6">Phone No.</dt>
-                        <dd class="col-6">{{patient.phone_num}}</dd>
-                        <dt class="col-6">Date of Birth</dt>
-                        <dd class="col-6">{{patient.birth_date}}</dd>
-                    </dl>
+                
+                <div class="card col-md-4 mb-4 ml-4 d-flex" style="max-height: 350px; overflow-y:auto;">
+                    <div class="card-body">
+                        <form id="submitCondition" action="" method="post" name="addCondition">
+                            {% csrf_token %}
+                            <div id="add">
+                                <h6 class="d-flex align-items-center mb-3"><i class="material-icons text-info mr-2">Medical Conditions &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<a onclick="toggleAddCondition()" href="#">Add</a></i></h6>
+                            </div>
+                            <div id="confirm" hidden>
+                                <h6 class="d-flex align-items-center mb-3"><i class="material-icons text-info mr-2">Medical Conditions &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<a onclick="toggleAddCondition()" href="#">Cancel</a></i></h6>
+                            </div>
+                            <hr>
+                            <div id="addInput"hidden >
+                                <input id="newCondition" name="newCondition" type="text"<i>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<a href="javascript:$('submitCondition').submit();" name="newCondition" onclick="submitAnchor()">Confirm</a></i>
+                                <button hidden id="addCondition" name="addCondition" type="submit" class="btn btn-success"></button>
+                            </div>
+                            <hr hidden id="addHR">
+                            {% for condition in conditions %}
+                            <h6 id="id" class="">{{condition}}</h6><h6><a href="{% url 'deletecondition' condition patient.id %}">Remove</a></h6>  
+                            <hr>
+                            {% endfor %}
+                        </form>
+                    </div>
                 </div>
+            
             </div>
-            <div class="card mb-4"> 
+
+            <div class="card mb-3"> 
                 <div class="card-header">
                     <i class="fas fa-table me-1"></i>
                     Reports
@@ -70,25 +104,25 @@
                 </div>
             </div>
             {% if request.session.role == 'doctor' %}
+            <div class="col-md-12">
             <a href="{% url 'classify' patient.id %}">
                 <button onclick="" type="submit" class="btn btn-primary">Generate Report</button>
             </a>
-            {% endif %}
-            <div class="col-md-2 mt-5">
-                <a href="{% url 'deletepatient' patient.id %}" class="float-right">
-                    <button onclick="" type="submit" class="btn btn-danger">Archive Patient</button>
-                </a>
+            <a href="{% url 'deletepatient' patient.id %}" class="float-end">
+                <button onclick="" type="submit" class="btn btn-danger">Archive Patient</button>
+            </a>
             </div>
+            {% endif %}
         </div>
         
-        <!-- {% if request.session.role == 'admin'%}
+        {% if request.session.role == 'admin'%}
             <div class="row">
                 <form method="post">
                     {% csrf_token %}
-                    <div class="col-3">
+                    <div class="col-3 px-4">
                         <button name="newpass" type="submit" class="btn btn-success">Generate New Password</button>
                     </div>
-                    <div class="col-3"></div>
+                    <!-- <div class="col-3"></div>
                     {% if 'newpass' in request.session %}
                     <div class="col-3">
                         <input hidden name="newpass" id="newpass" type="text" value="{{ newpass }}">
@@ -97,10 +131,10 @@
                     <div class="col-3">
                         <text style="padding: 5px; border: 1px solid red;" class="passtext">{{request.session.newpass}}</text>
                     </div>
-                    {% endif %}
+                    {% endif %} -->
                 </form>
             </div>
-        {% endif %} -->
+        {% endif %}
     </main>
 </div>
 

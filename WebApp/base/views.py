@@ -1,4 +1,5 @@
 from datetime import datetime
+import re
 import time
 from tkinter import Y
 from django.forms import ImageField
@@ -95,14 +96,36 @@ def report(request, id):
         
             context = {'patient' : patient, 'doctor' : doctor, 'report' : report}
             return render(request, 'viewReport.html', context) 
-           
+
+def checkEmail(email):
+    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+    if(re.fullmatch(regex, email)):
+        return True
+
 # returns profile page
 def profile(request):
     if 'role' in request.session:
         if request.session['role'] == 'patient':
+            if request.method == 'POST':
+                name = request.POST.get('editName')
+                email = request.POST.get('editEmail')
+                phone = request.POST.get('editPhone')
+                if not any(str.isdigit(c) for c in name) and phone.isnumeric() and  checkEmail(email):
+                    Patient.objects.filter(id = request.session['id']).update(email = email, patient_name = name, phone_num = phone)
+                else:
+                    patient = Patient.objects.get(id = request.session['id'])
+                    reports = Report.objects.filter(patient = request.session['id'])
+                    if len(reports) > 0:
+                        id = reports[0].doctor
+                        doctor = Doctor.objects.get(id=id).name
+                    return render(request, 'profile.html', {'patient' : patient, 'doctor' : doctor, 'reports' : reports}) 
             patient = Patient.objects.get(id = request.session['id'])
             reports = Report.objects.filter(patient = request.session['id'])
-            return render(request, 'profile.html', {'patient' : patient, 'reports' : reports}) 
+            conditions = patient.medical_conditions.split(',')
+            if len(reports) > 0:
+                id = reports[0].doctor
+                doctor = Doctor.objects.get(id=id).name  
+            return render(request, 'profile.html', {'patient' : patient, 'doctor' : doctor, 'conditions' : conditions, 'reports' : reports}) 
         else :
             return redirect('index')
     else:
@@ -148,22 +171,32 @@ def patient(request, id):
             if request.method == 'POST':
                 if 'newpass' in request.POST:
                     newpass = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(8))
-                    request.session['newpass'] = newpass
+                    Patient.objects.filter(id=id).update(password=newpass)
                     return redirect('patient', id)
-                elif 'confirmpass' in request.POST:
-                    if 'newpass' in request.session:
-                        Patient.objects.filter(id=id).update(password=request.session['newpass'])
-                        del request.session['newpass']
+                elif 'addCondition' in request.POST:
+                    newCondition = request.POST.get('newCondition')
+                    patient = Patient.objects.get(id=id)
+                    if patient.medical_conditions:
+                        conditions = patient.medical_conditions.split(',')
+                        conditions.append(newCondition)
+                        conditions = ','.join(conditions)
+                        Patient.objects.filter(id = id).update(medical_conditions = conditions)
                     else:
-                        return redirect('patient', id)
+                        Patient.objects.filter(id = id).update(medical_conditions = newCondition)
+                    return redirect('patient', id)
             patient = Patient.objects.get(id=id)
             reports = Report.objects.filter(patient=id)
+            if patient.medical_conditions:
+                conditions = patient.medical_conditions.split(',')
             if len(reports) > 0:
                 id = reports[0].doctor
                 doctor = Doctor.objects.get(id=id).name  
             else:
                 doctor = ''
-            return render(request, 'viewPatient.html', {'patient':patient, 'reports':reports, 'doctor' : doctor}) 
+            if patient.medical_conditions:
+                return render(request, 'viewPatient.html', {'patient':patient, 'conditions' : conditions, 'reports':reports, 'doctor' : doctor}) 
+            else:
+                return render(request, 'viewPatient.html', {'patient':patient, 'reports':reports, 'doctor' : doctor}) 
 
 # returns addPatient page, submits new patient to database
 def addpatient(request):
@@ -171,6 +204,7 @@ def addpatient(request):
         if request.session['role'] == 'doctor':
             if request.method == 'POST':
                 name = request.POST.get('name')
+                email = request.POST.get('email')
                 birthdate = request.POST.get('birthdate')
                 phoneno = request.POST.get('phoneno')
                 error = False
@@ -180,7 +214,7 @@ def addpatient(request):
                 if any(char.isdigit() for char in name):
                     messages.error(request, 'Name cannot contain numbers.')
                     error = True
-                if len(phoneno)< 10 and phoneno.isnumeric():
+                if len(phoneno) < 11 or not phoneno.isnumeric():
                     messages.error(request, 'Please enter a valid phone number.')   
                     error = True
                 if not error:
@@ -190,7 +224,7 @@ def addpatient(request):
                     x = name.replace(" ", "")
                     username = x.lower()
 
-                    query = Patient(patient_name=name, birth_date=birthdate, phone_num=phoneno, password=password, username=username, assigned_doctor=doctor)
+                    query = Patient(patient_name=name, email=email, birth_date=birthdate, phone_num=phoneno, password=password, username=username, assigned_doctor=doctor)
                     query.save()
                     return redirect('patients')
             return render(request, 'addPatient.html')
@@ -207,7 +241,7 @@ def adddoctor(request):
 
                 query = Doctor(name=name, username=username, password=password)
                 query.save()
-                return redirect('doctors')
+                return render(request, 'doctors.html')
             return render(request, 'addDoctor.html')    
 
 # deletes patient from database
@@ -215,7 +249,6 @@ def deletepatient(request, id):
     if 'role' in request.session:
         if request.session['role'] == 'doctor':
             Patient.objects.filter(id=id).delete()
-
             return redirect('patients')
 
 # deletes doctor from database
@@ -223,8 +256,30 @@ def deletedoctor(request, id):
     if 'role' in request.session:
         if request.session['role'] == 'admin':
             Doctor.objects.filter(id=id).delete()
-
             return redirect('doctors')    
+
+def deletecondition(request, condition, id):
+    if 'role' in request.session:
+        if request.session['role'] == 'doctor':
+            patient = Patient.objects.get(id=id)
+            conditions = patient.medical_conditions.split(',')
+            conditions.remove(condition)
+            conditions = ','.join(conditions)
+            Patient.objects.filter(id = id).update(medical_conditions = conditions)
+            reports = Report.objects.filter(patient=id)
+            if patient.medical_conditions:
+                conditions = patient.medical_conditions.split(',')
+            if len(reports) > 0:
+                doc_id = reports[0].doctor
+                doctor = Doctor.objects.get(id=doc_id).name  
+            else:
+                doctor = ''
+            return redirect('patient', id)
+            return render(request, 'viewPatient.html', {'patient':patient, 'conditions' : conditions, 'reports':reports, 'doctor' : doctor})
+            if patient.medical_conditions:
+                return render(request, 'viewPatient.html', {'patient':patient, 'conditions' : conditions, 'reports':reports, 'doctor' : doctor}) 
+            else:
+                return render(request, 'viewPatient.html', {'patient':patient, 'reports':reports, 'doctor' : doctor}) 
 
 # deletes report from database
 def deletereport(request, id):
@@ -277,6 +332,7 @@ def login(request):
 
         if admin == None:
             messages.error(request, 'Incorrect credentials.')
+            return render(request, 'login.html')  
     if 'loggedin' in request.session:
         return render(request, 'index.html')
     else :
@@ -372,9 +428,9 @@ def classify_model(data, model, std, cols):
 # returns ROI prediction
 def classify_img(data, models):
     pred = {
-        'normal': 0,
-        'fatty': 0,
-        'cirrhosis': 0
+        'Normal': 0,
+        'Fatty Liver Disease': 0,
+        'Liver Cirrhosis': 0
     }
     for key in models.keys():
         model, std, cols = models[key]

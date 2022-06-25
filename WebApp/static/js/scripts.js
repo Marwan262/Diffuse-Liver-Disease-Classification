@@ -16,8 +16,6 @@ window.addEventListener('DOMContentLoaded', event => {
 
 });
 
-
-
 function validateName() {
     let name = document.forms["addForm"]["name"].value;
     if (/\d/.test(name)) {
@@ -26,6 +24,13 @@ function validateName() {
     }
     else 
         document.getElementById("nameError").hidden = true;
+}
+
+function validateEmail() {
+    email = document.getElementById('editEmail');
+    if(!email.match(/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)) {
+
+    }
 }
 
 function validateNumber() {
@@ -62,6 +67,47 @@ function toggleEditReport() {
     } 
 }
 
+function submitAnchor() {
+    $("#addCondition").click()
+}
+
+function toggleAddCondition() {
+    
+    if ($("#confirm").is(":hidden")) {
+        $("#add").attr("hidden", true);
+        $("#confirm").attr("hidden", false);
+        $("#addHR").attr("hidden", false);
+        $("#addInput").attr("hidden", false);
+    }
+    else {
+        $("#add").attr("hidden", false);
+        $("#confirm").attr("hidden", true);
+        $("#addHR").attr("hidden", true);
+        $("#addInput").attr("hidden", true);
+    }
+}
+
+function toggleEditProfile() {
+    if ($("#editName").is(":hidden")) {
+        $("#editName").removeAttr('hidden');
+        $("#editEmail").removeAttr('hidden');
+        $("#editPhone").removeAttr('hidden');
+        $("#submitProfile").removeAttr('hidden');
+        $("#name").attr("hidden", true);
+        $("#email").attr("hidden", true);
+        $("#phone").attr("hidden", true);
+    }
+    else {
+        $("#name").removeAttr('hidden');
+        $("#email").removeAttr('hidden');
+        $("#phone").removeAttr('hidden');
+        $("#editName").attr("hidden", true);
+        $("#editEmail").attr("hidden", true);
+        $("#editPhone").attr("hidden", true);
+        $("#submitProfile").attr("hidden", true);
+    }
+}
+
 function toggleCheckbox() {
     x = document.getElementById('diagnosisCheck');
     if (x.checked == true) {
@@ -71,6 +117,8 @@ function toggleCheckbox() {
         $("#diagnosis").prop('readonly', true);
     }
 }
+
+
 
 function init() {
     $('textarea#tiny').tinymce({
@@ -109,9 +157,9 @@ $(document).ready(function(){
     });
     
     if ($(".filter-button").removeClass("active")) {
-$(this).removeClass("active");
-}
-$(this).addClass("active");
+        $(this).removeClass("active");
+        }
+        $(this).addClass("active");
 
 });
 

@@ -10,106 +10,130 @@
         <div class="container-fluid px-4">
             <div class="row gutters-sm mt-5">
                 <div class="col-md-4 mb-3">
-                  <div class="card">
-                    <div class="card-body">
-                      <div class="d-flex flex-column align-items-center text-center">
-                        <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="Admin" class="rounded-circle" width="150">
-                        <div class="mt-3">
-                          <h4>{{patient.patient_name}}</h4>
-                          <p class="text-muted font-size-sm">Heliopolis, Cairo</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-8">
-                  <div class="card mb-3">
+                    <div class="card mb-4">
                         <div class="card-body">
-                            <div class="row">
-                                <div class="col-sm-3">
-                                <h6 class="mb-0">Full Name</h6>
-                                </div>
-                                <div class="col-sm-9 text-secondary">
-                                    {{patient.patient_name}}
-                                </div>
-                            </div>
-                            <hr>
-                            <div class="row">
-                                <div class="col-sm-3">
-                                <h6 class="mb-0">Email</h6>
-                                </div>
-                                <div class="col-sm-9 text-secondary">
-                                yehia1997@gmail.com
-                                </div>
-                            </div>
-                            <hr>
-                            <div class="row">
-                                <div class="col-sm-3">
-                                <h6 class="mb-0">Mobile</h6>
-                                </div>
-                                <div class="col-sm-9 text-secondary">
-                                    {{patient.phone_num}}
-                                </div>
-                            </div>
-                            <hr>
-                            <div class="row">
-                                <div class="col-sm-3">
-                                <h6 class="mb-0">Gender</h6>
-                                </div>
-                                <div class="col-sm-9 text-secondary">
-                                Male
+                            <div class="d-flex flex-column align-items-center text-center">
+                                {% if patient.gender == 'Male' %}
+                                <img src="{% static 'media/images/male.png' %}" alt="Admin" class="rounded-circle" width="150">
+                                {% elif patient.gender == 'Female' %}
+                                <img src="{% static 'media/images/female.png' %}" alt="Admin" class="rounded-circle" width="150">
+                                {% endif %}
+                                <div class="mt-3">
+                                    <h4>{{patient.patient_name}}</h4>
+                                    <p class="text-muted font-size-sm">Heliopolis, Cairo</p>
                                 </div>
                             </div>
                         </div>
-                  </div>
-    
-                    <div class="row gutters-sm">
-                        <div class="col-sm-6 mb-3">
-                        <div class="card h-100">
-                            <div class="card-body">
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
                             <h6 class="d-flex align-items-center mb-3"><i class="material-icons text-info mr-2">Medical Conditions</i></h6>
-                            </div>
-                        </div>
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                        <div class="card h-100">
-                            <div class="card-body">
-                            <h6 class="d-flex align-items-center mb-3"><i class="material-icons text-info mr-2">Diagnostic History</i></h6>
-                            </div>
-                        </div>
+                            <hr>
+                            {% for condition in conditions %}
+                            <h6 class="">{{condition}}</h6>
+                            <hr>
+                            {% endfor %}
                         </div>
                     </div>
                 </div>
-                <div class="table-responsive col-md-6">
-                    <table class="table table-striped">
-                        <thead class="thead-light">
-                            <tr>
-                                <th>Report ID</th>
-                                <th>Patient Name</th>
-                                <th>Pathologist</th>
-                                <th>Date</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        {% for report in reports %}
-                        <tbody>
-                            <tr>
-                                <th>{{report.id}}</th>
-                                {% if request.session.role == 'admin' %}
-                                <th>{{patient.patient_name}}</th>
-                                {% else %}
-                                <th>{{patient.patient_name}}</th>
-                                {% endif %}
-                                <th>{{report.doctor}}</th>
-                                <th>{{report.date}}</th>
-                                <th><a href = "{% url 'report' report.id %}"><span class="fa fa-arrow-right fa-lg"></span></th>
-                            </tr>
-                        </tbody>
-                        {% endfor %}
-                    </table>
+                
+                <div class="col-md-8">
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <form action="" method="post" name="editProfile">
+                                {% csrf_token %}
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        <h6 class="mb-0">Full Name</h6>
+                                    </div>
+                                    <div id="name" class="col-sm-9 text-secondary">
+                                        {{patient.patient_name}}
+                                    </div>
+                                    <div hidden id="editName" class="col-sm-9 text-secondary">
+                                        <input id="editName" name="editName" type="text" value="{{patient.patient_name}}">
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        <h6 class="mb-0">Email</h6>
+                                    </div>
+                                    <div id="email" class="col-sm-9 text-secondary">
+                                        {{patient.email}}
+                                    </div>
+                                    <div hidden id="editEmail" class="col-sm-9 text-secondary">
+                                        <input id="editEmail" name="editEmail" type="text" value="{{patient.email}}">
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        <h6 class="mb-0">Mobile</h6>
+                                    </div>
+                                    <div id="phone" class="col-sm-9 text-secondary">
+                                        {{patient.phone_num}}
+                                    </div>
+                                    <div hidden id="editPhone" class="col-sm-9 text-secondary">
+                                        <input id="editPhone" name="editPhone" type="text" value="{{patient.phone_num}}">
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        <h6 class="mb-0">Gender</h6>
+                                    </div>
+                                    <div class="col-sm-9 text-secondary">
+                                        {{patient.gender}}
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        <a href="#" onclick="toggleEditProfile()" class="text-info editProfile">Edit</a>
+                                    </div>
+                                    <div hidden id="submitProfile" class="col-sm-3">
+                                        <a href="#" onclick="toggleEditProfile()" class="text-info editProfile"><input type="submit" name="edit" value="Save"></a>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="row gutters-sm px-2">
+                        <div class="card mb-4">
+                            <div class="table-responsive col-md-12">
+                                <table class="table table-striped">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>Report ID</th>
+                                            <th>Patient Name</th>
+                                            <th>Pathologist</th>
+                                            <th>Date</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    {% for report in reports %}
+                                    <tbody>
+                                        <tr>
+                                            <th>{{report.id}}</th>
+                                            {% if request.session.role == 'admin' %}
+                                            <th>{{patient.patient_name}}</th>
+                                            {% else %}
+                                            <th>{{patient.patient_name}}</th>
+                                            {% endif %}
+                                            <th>{{doctor}}</th>
+                                            <th>{{report.date}}</th>
+                                            <th><a href = "{% url 'report' report.id %}"><span class="fa fa-arrow-right fa-lg"></span></th>
+                                        </tr>
+                                    </tbody>
+                                    {% endfor %}
+                                </table>
+                            </div>
+                        </div>
+                        
+                    </div>
                 </div>
             </div>
-            
         </div>
     </main>
 </div>

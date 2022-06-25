@@ -22,6 +22,7 @@
                                 <th>Name</th>
                                 <th>ID</th>
                                 <th>Phone No.</th>
+                                <th>E-Mail</th>
                                 <th>Birth Date</th>
                             </tr>
                         </thead>
@@ -30,32 +31,35 @@
                                 <th>Name</th>
                                 <th>ID</th>
                                 <th>Phone No.</th>
+                                <th>E-Mail</th>
                                 <th>Birth Date</th>
-                                <th></th>
                             </tr>
                         </tfoot>
                         <tbody>
                             {% for patient in patients %}
                             <tr>
+                                {% if request.session.role == 'doctor' or request.session.role == 'admin' %}
                                 <th><a href="{{patient.id}}">{{patient.patient_name}}</a></th>
+                                {% else %}
+                                <th>{{patient.patient_name}}</th>
+                                {% endif %}
                                 <th>{{patient.id}}</th>
                                 <th>{{patient.phone_num}}</th>
+                                <th>{{patient.email}}</th>
                                 <th>{{patient.birth_date}}</th>
-                                {% if request.session.role == 'doctor' %}
-                                <th><a href="{{patient.id}}"><span class="fa fa-arrow-right fa-lg"></span></th>
-                                {% endif %}
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
             </div>
+            {% if request.session.role == 'doctor' %}
+            <a href="{% url 'addpatient' %}">
+                <button onclick="" type="submit" class="btn btn-primary">Add Patient</button>
+            </a>
+            {% endif %}
         </div>
-        {% if request.session.role == 'doctor' %}
-        <a href="{% url 'addpatient' %}">
-            <button onclick="" type="submit" class="btn btn-primary">Add Patient</button>
-        </a>
-        {% endif %}
+        
     </main>
 </div>
     
