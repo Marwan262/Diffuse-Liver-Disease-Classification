@@ -185,14 +185,16 @@ def patient(request, id):
                         Patient.objects.filter(id = id).update(medical_conditions = newCondition)
                     return redirect('patient', id)
             patient = Patient.objects.get(id=id)
+            doc = patient.assigned_doctor
             reports = Report.objects.filter(patient=id)
+            doctor = Doctor.objects.get(name=doc)
             if patient.medical_conditions:
                 conditions = patient.medical_conditions.split(',')
-            if len(reports) > 0:
-                id = reports[0].doctor
-                doctor = Doctor.objects.get(id=id).name  
-            else:
-                doctor = ''
+            # if len(reports) > 0:
+            #     doctor_id = reports[0].doctor
+            #     doctor = Doctor.objects.get(id=doctor_id).name  
+            # else:
+            #     doctor = ''
             if patient.medical_conditions:
                 return render(request, 'viewPatient.html', {'patient':patient, 'conditions' : conditions, 'reports':reports, 'doctor' : doctor}) 
             else:
@@ -257,6 +259,18 @@ def deletedoctor(request, id):
         if request.session['role'] == 'admin':
             Doctor.objects.filter(id=id).delete()
             return redirect('doctors')    
+
+def archive(request, id):
+    if 'role' in request.session:
+        if request.session['role'] == 'doctor':
+            Patient.objects.filter(id=id).update(is_archived=True)
+            return redirect('patient', id)
+
+def restore(request, id):
+    if 'role' in request.session:
+        if request.session['role'] == 'doctor':
+            Patient.objects.filter(id=id).update(is_archived=False)
+            return redirect('patient', id)
 
 def deletecondition(request, condition, id):
     if 'role' in request.session:
@@ -428,9 +442,9 @@ def classify_model(data, model, std, cols):
 # returns ROI prediction
 def classify_img(data, models):
     pred = {
-        'Normal': 0,
-        'Fatty Liver Disease': 0,
-        'Liver Cirrhosis': 0
+        'normal': 0,
+        'fatty': 0,
+        'cirrhosis': 0
     }
     for key in models.keys():
         model, std, cols = models[key]

@@ -10,7 +10,7 @@
             <ol class="breadcrumb mb-4">
                 <li class="breadcrumb-item active"></li>
             </ol>
-            <div class="row">
+            <div class="row px-2">
                 <div class="card col-md-7 mb-4" style="margin-right: 15px;"> 
                     <div class="card-header row">
                         <!-- <i class="fas fa-user me-1""></i> -->
@@ -34,6 +34,10 @@
                             <dd class="col-6">{{patient.phone_num}}</dd>
                             <dt class="col-6">Date of Birth</dt>
                             <dd class="col-6">{{patient.birth_date}}</dd>
+                            {% if patient.is_archived %}
+                            <dt class="col-6">Status</dt>
+                            <dd class="col-6" style="color: red;">Archived</dd>
+                            {% endif %}
                         </dl>
                     </div>
                 </div>
@@ -43,7 +47,11 @@
                         <form id="submitCondition" action="" method="post" name="addCondition">
                             {% csrf_token %}
                             <div id="add">
+                                {% if patient.is_archived %}
+                                <h6 class="d-flex align-items-center mb-3"><i class="material-icons text-info mr-2">Medical Conditions &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<a style="pointer-events: none; color: grey;" onclick="toggleAddCondition()" href="#">Add</a></i></h6>
+                                {% else %}
                                 <h6 class="d-flex align-items-center mb-3"><i class="material-icons text-info mr-2">Medical Conditions &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<a onclick="toggleAddCondition()" href="#">Add</a></i></h6>
+                                {% endif %}
                             </div>
                             <div id="confirm" hidden>
                                 <h6 class="d-flex align-items-center mb-3"><i class="material-icons text-info mr-2">Medical Conditions &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<a onclick="toggleAddCondition()" href="#">Cancel</a></i></h6>
@@ -55,7 +63,12 @@
                             </div>
                             <hr hidden id="addHR">
                             {% for condition in conditions %}
-                            <h6 id="id" class="">{{condition}}</h6><h6><a href="{% url 'deletecondition' condition patient.id %}">Remove</a></h6>  
+                            {% if patient.is_archived %}
+                            <h6 id="id" class="">{{condition}}</h6><h6><a style="pointer-events: none; color: grey;" href="{% url 'deletecondition' condition patient.id %}">Remove</a></h6> 
+                            {% else %}
+                            <h6 id="id" class="">{{condition}}</h6><h6><a href="{% url 'deletecondition' condition patient.id %}">Remove</a></h6> 
+                            {% endif %}
+                            
                             <hr>
                             {% endfor %}
                         </form>
@@ -103,14 +116,23 @@
                     </table>
                 </div>
             </div>
-            {% if request.session.role == 'doctor' %}
+            {% if request.session.role == 'doctor' and not patient.is_archived %}
             <div class="col-md-12">
-            <a href="{% url 'classify' patient.id %}">
-                <button onclick="" type="submit" class="btn btn-primary">Generate Report</button>
-            </a>
-            <a href="{% url 'deletepatient' patient.id %}" class="float-end">
-                <button onclick="" type="submit" class="btn btn-danger">Archive Patient</button>
-            </a>
+                <a href="{% url 'classify' patient.id %}">
+                    <button onclick="" type="submit" class="btn btn-primary">Generate Report</button>
+                </a>
+                <a href="{% url 'archive' patient.id %}" class="float-end px-2">
+                    <button onclick="" type="submit" class="btn btn-danger">Archive Patient</button>
+                </a>
+            </div>
+            {% else %}
+            <div class="col-md-12">
+                <a href="{% url 'restore' patient.id %}">
+                    <button onclick="" type="submit" class="btn btn-success">Restore Patient</button>
+                </a>
+                <a href="{% url 'deletepatient' patient.id %}" class="float-end">
+                    <button onclick="" type="submit" class="btn btn-danger">Delete Patient</button>
+                </a>
             </div>
             {% endif %}
         </div>

@@ -51,7 +51,7 @@ class Patient(models.Model):
     birth_date = models.DateField()
     gender = models.CharField(choices=GENDER_CHOICES, max_length=50, null=True, default='')
     email = models.EmailField(max_length=200, null=True, default='')
-    # medical_conditions = ArrayField(models.CharField(max_length=200, blank=True))
+    is_archived = models.BooleanField(default=False)
     medical_conditions = models.CharField(max_length = 200, null=True, blank=True)
  
     assigned_doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)

@@ -6,6 +6,9 @@
     <main>
         <div class="container-fluid px-4">
             <h1 class="mt-4">Patients</h1>
+            <div class="float-end">
+                <label for="">Toggle archived patients</label><input onclick="toggleArchivedPatients()" id="checkArchived" type="checkbox" class="float-end">
+            </div>
             <ol class="breadcrumb mb-4">
                 <li class="breadcrumb-item active"></li>
             </ol>
@@ -27,6 +30,7 @@
                             </tr>
                         </thead>
                         <tfoot>
+                            
                             <tr>
                                 <th>Name</th>
                                 <th>ID</th>
@@ -34,10 +38,12 @@
                                 <th>E-Mail</th>
                                 <th>Birth Date</th>
                             </tr>
+                            
                         </tfoot>
                         <tbody>
                             {% for patient in patients %}
-                            <tr>
+                            {% if patient.is_archived %}
+                            <tr style="color: red;" id="archived" hidden>
                                 {% if request.session.role == 'doctor' or request.session.role == 'admin' %}
                                 <th><a href="{{patient.id}}">{{patient.patient_name}}</a></th>
                                 {% else %}
@@ -48,7 +54,21 @@
                                 <th>{{patient.email}}</th>
                                 <th>{{patient.birth_date}}</th>
                             </tr>
+                            {% else %}
+                            <tr id="notArchived">
+                                {% if request.session.role == 'doctor' or request.session.role == 'admin' %}
+                                <th><a href="{{patient.id}}">{{patient.patient_name}}</a></th>
+                                {% else %}
+                                <th>{{patient.patient_name}}</th>
+                                {% endif %}
+                                <th>{{patient.id}}</th>
+                                <th>{{patient.phone_num}}</th>
+                                <th>{{patient.email}}</th>
+                                <th>{{patient.birth_date}}</th>
+                            </tr>
+                            {% endif %}
                             {% endfor %}
+                            
                         </tbody>
                     </table>
                 </div>
