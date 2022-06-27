@@ -13,8 +13,10 @@ class Doctor(models.Model):
     name = models.CharField(max_length = 200)
     username = models.CharField(max_length = 200)
     password = models.CharField(max_length = 200, null=True)
+    phone_num = models.CharField(max_length = 13)
     email = models.EmailField(max_length=200, null=True, default='')
     assigned_patients = models.TextField(null = True, blank = True)
+    institution = models.CharField(max_length = 200, null=True)
     role = models.CharField(max_length=200, default="doctor")
 
     def __str__(self):
@@ -54,7 +56,7 @@ class Patient(models.Model):
     is_archived = models.BooleanField(default=False)
     medical_conditions = models.CharField(max_length = 200, null=True, blank=True)
  
-    assigned_doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
+    assigned_doctor = models.ForeignKey(Doctor, on_delete=models.SET_NULL, null=True)
     check_in_date = models.DateField(auto_now_add = True)
     role = models.CharField(max_length=200, default="patient")
 

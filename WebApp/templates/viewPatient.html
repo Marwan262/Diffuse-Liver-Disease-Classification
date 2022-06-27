@@ -26,7 +26,7 @@
                             <dt class="col-6">Username</dt>
                             <dd class="col-6">{{patient.username}}</dd>
                             <dt class="col-6">Password</dt>
-                            <dd class="col-6">{{patient.password}}</dd>
+                            <dd class="col-6">{{patient.password}}&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp <i><a href="{% url 'newpass' patient.id patient.role %}">Generate New Password</a></i></dd>
                             {% endif %}
                             <dt class="col-6">Assigned Doctor</dt>
                             <dd class="col-6">{{patient.assigned_doctor}}</dd>
@@ -34,10 +34,16 @@
                             <dd class="col-6">{{patient.phone_num}}</dd>
                             <dt class="col-6">Date of Birth</dt>
                             <dd class="col-6">{{patient.birth_date}}</dd>
+                            <dt class="col-6">Gender</dt>
+                            <dd class="col-6">{{patient.gender}}</dd>
                             {% if patient.is_archived %}
                             <dt class="col-6">Status</dt>
                             <dd class="col-6" style="color: red;">Archived</dd>
                             {% endif %}
+                            <dt></dt>
+                            <dd>
+                            
+                        </dd>
                         </dl>
                     </div>
                 </div>
@@ -47,7 +53,7 @@
                         <form id="submitCondition" action="" method="post" name="addCondition">
                             {% csrf_token %}
                             <div id="add">
-                                {% if patient.is_archived %}
+                                {% if patient.is_archived or request.session.role == 'admin' %}
                                 <h6 class="d-flex align-items-center mb-3"><i class="material-icons text-info mr-2">Medical Conditions &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<a style="pointer-events: none; color: grey;" onclick="toggleAddCondition()" href="#">Add</a></i></h6>
                                 {% else %}
                                 <h6 class="d-flex align-items-center mb-3"><i class="material-icons text-info mr-2">Medical Conditions &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<a onclick="toggleAddCondition()" href="#">Add</a></i></h6>
@@ -58,12 +64,12 @@
                             </div>
                             <hr>
                             <div id="addInput"hidden >
-                                <input id="newCondition" name="newCondition" type="text"<i>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<a href="javascript:$('submitCondition').submit();" name="newCondition" onclick="submitAnchor()">Confirm</a></i>
+                                <input id="newCondition" name="newCondition" type="text"><i>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<a href="javascript:$('submitCondition').submit();" name="newCondition" onclick="submitCondition()">Confirm</a></i>
                                 <button hidden id="addCondition" name="addCondition" type="submit" class="btn btn-success"></button>
                             </div>
                             <hr hidden id="addHR">
                             {% for condition in conditions %}
-                            {% if patient.is_archived %}
+                            {% if patient.is_archived or request.session.role == 'admin' %}
                             <h6 id="id" class="">{{condition}}</h6><h6><a style="pointer-events: none; color: grey;" href="{% url 'deletecondition' condition patient.id %}">Remove</a></h6> 
                             {% else %}
                             <h6 id="id" class="">{{condition}}</h6><h6><a href="{% url 'deletecondition' condition patient.id %}">Remove</a></h6> 
@@ -137,26 +143,7 @@
             {% endif %}
         </div>
         
-        {% if request.session.role == 'admin'%}
-            <div class="row">
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="col-3 px-4">
-                        <button name="newpass" type="submit" class="btn btn-success">Generate New Password</button>
-                    </div>
-                    <!-- <div class="col-3"></div>
-                    {% if 'newpass' in request.session %}
-                    <div class="col-3">
-                        <input hidden name="newpass" id="newpass" type="text" value="{{ newpass }}">
-                        <button name="confirmpass" type="submit" class="btn btn-warning">Confirm password</button>
-                    </div>
-                    <div class="col-3">
-                        <text style="padding: 5px; border: 1px solid red;" class="passtext">{{request.session.newpass}}</text>
-                    </div>
-                    {% endif %} -->
-                </form>
-            </div>
-        {% endif %}
+        
     </main>
 </div>
 

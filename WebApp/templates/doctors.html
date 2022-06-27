@@ -22,14 +22,18 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Name</th>
-                                <!-- <th></th> -->
+                                <th>Institution</th>
+                                <th>Phone No.</th>
+                                <th>E-Mail</th>
                             </tr>
                         </thead>
                         <tfoot>
                             <tr>
                                 <th>ID</th>
                                 <th>Name</th>
-                                <!-- <th></th> -->
+                                <th>Institution</th>
+                                <th>Phone No.</th>
+                                <th>E-Mail</th>
                             </tr>
                         </tfoot>
                         <tbody>
@@ -37,7 +41,9 @@
                             <tr>
                                 <th>{{doctor.id}}</th>
                                 <th><a href="{{doctor.id}}">{{doctor.name}}</a></th>
-                                <!-- <th><a href="{{doctor.id}}"><span class="fa fa-arrow-right fa-lg"></span></th> -->
+                                <th>{{doctor.institution}}</th>
+                                <th>{{doctor.phone_num}}</th>
+                                <th>{{doctor.email}}</th>
                             </tr>
                             {% endfor %}
                         </tbody>
