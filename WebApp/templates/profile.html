@@ -29,10 +29,15 @@
                         <div class="card-body">
                             <h6 class="d-flex align-items-center mb-3"><i class="material-icons text-info mr-2">Medical Conditions</i></h6>
                             <hr>
+                            {% if conditions%}
                             {% for condition in conditions %}
                             <h6 class="">{{condition}}</h6>
                             <hr>
                             {% endfor %}
+                            {% else %}
+                            <h6 class="">No Medical Conditions.</h6>
+                            <hr>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

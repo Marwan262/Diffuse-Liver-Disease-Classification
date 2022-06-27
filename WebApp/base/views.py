@@ -91,7 +91,7 @@ def report(request, id):
                 logging.debug("post")
                 notes = request.POST.get('notesE')
                 classification = request.POST.get('classificationE')
-                Report.objects.filter(id = id).update(notes = notes, classification = classification)
+                Report.objects.filter(id = id).update(notes = notes, diagnosis = classification)
                 return render(request, 'viewReport.html', {'report' : report, 'patient' : patient, 'doctor': doctor}) 
         
             context = {'patient' : patient, 'doctor' : doctor, 'report' : report}
@@ -121,10 +121,11 @@ def profile(request):
                     return render(request, 'profile.html', {'patient' : patient, 'doctor' : doctor, 'reports' : reports}) 
             patient = Patient.objects.get(id = request.session['id'])
             reports = Report.objects.filter(patient = request.session['id'])
-            conditions = patient.medical_conditions.split(',')
-            if len(reports) > 0:
-                id = reports[0].doctor
-                doctor = Doctor.objects.get(id=id).name  
+            conditions = None
+            if patient.medical_conditions:
+                conditions = patient.medical_conditions.split(',')
+           
+            doctor = patient.assigned_doctor
             return render(request, 'profile.html', {'patient' : patient, 'doctor' : doctor, 'conditions' : conditions, 'reports' : reports}) 
         else :
             return redirect('index')
