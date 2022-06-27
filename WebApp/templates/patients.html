@@ -7,12 +7,12 @@
         <div class="container-fluid px-4">
             <h1 class="mt-4">Patients</h1>
             <div class="float-end">
-                <label for="">Toggle archived patients</label><input onclick="toggleArchivedPatients()" id="checkArchived" type="checkbox" class="float-end">
+                <label class="form-check-label" for="">Show active patients&nbsp&nbsp</label><input onclick="toggleActivePatients()" checked id="checkActive" type="checkbox" class=" form-check-input">
+                <label class="form-check-label" for="">&nbsp&nbspShow archived patients&nbsp&nbsp</label><input onclick="toggleArchivedPatients()" id="checkArchived" type="checkbox" class="float-end form-check-input">
             </div>
             <ol class="breadcrumb mb-4">
                 <li class="breadcrumb-item active"></li>
             </ol>
-            
             <div class="card mb-4">
                 <div class="card-header">
                     <i class="fas fa-table me-1"></i>
@@ -30,7 +30,6 @@
                             </tr>
                         </thead>
                         <tfoot>
-                            
                             <tr>
                                 <th>Name</th>
                                 <th>ID</th>
@@ -55,7 +54,7 @@
                                 <th>{{patient.birth_date}}</th>
                             </tr>
                             {% else %}
-                            <tr id="notArchived">
+                            <tr id="active">
                                 {% if request.session.role == 'doctor' or request.session.role == 'admin' %}
                                 <th><a href="{{patient.id}}">{{patient.patient_name}}</a></th>
                                 {% else %}

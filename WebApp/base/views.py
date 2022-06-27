@@ -160,20 +160,36 @@ def doctors(request):
 def doctor(request, id):
     if 'role' in request.session:
         if request.session['role'] == 'admin':
+            if request.method == 'POST':
+                if 'newpass' in request.POST:
+                    newpass = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(8))
+                    Doctor.objects.filter(id=id).update(password=newpass)
+                    return redirect('doctor', id)
             doctor = Doctor.objects.get(id=id)
             patients = Patient.objects.filter(assigned_doctor=id)   
             return render(request, 'viewDoctor.html', {'patients':patients, 'doctor' : doctor}) 
+
+def newpassword(request, id, role):
+    if role == 'doctor':
+        newpass = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(8))
+        Doctor.objects.filter(id=id).update(password=newpass)
+        return redirect('doctor', id)
+    elif role == 'patient':
+        newpass = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(8))
+        Patient.objects.filter(id=id).update(password=newpass)
+        return redirect('patient', id)
+
+# def newPasswordDoctor(request, id):
+#     newpass = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(8))
+#     Doctor.objects.filter(id=id).update(password=newpass)
+#     return redirect('doctor', id)
 
 # returns viewPatient page, submits new password to database
 def patient(request, id):
     if 'role' in request.session:
         if request.session['role'] in ('doctor', 'admin'):
             if request.method == 'POST':
-                if 'newpass' in request.POST:
-                    newpass = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(8))
-                    Patient.objects.filter(id=id).update(password=newpass)
-                    return redirect('patient', id)
-                elif 'addCondition' in request.POST:
+                if 'addCondition' in request.POST:
                     newCondition = request.POST.get('newCondition')
                     patient = Patient.objects.get(id=id)
                     if patient.medical_conditions:
@@ -209,6 +225,7 @@ def addpatient(request):
                 email = request.POST.get('email')
                 birthdate = request.POST.get('birthdate')
                 phoneno = request.POST.get('phoneno')
+                gender = request.POST.get('gender')
                 error = False
                 if not name or not birthdate or not phoneno:
                     messages.error(request, 'Please fill in all fields.')
@@ -216,7 +233,7 @@ def addpatient(request):
                 if any(char.isdigit() for char in name):
                     messages.error(request, 'Name cannot contain numbers.')
                     error = True
-                if len(phoneno) < 11 or not phoneno.isnumeric():
+                if len(phoneno) != 11 or not phoneno.isnumeric():
                     messages.error(request, 'Please enter a valid phone number.')   
                     error = True
                 if not error:
@@ -226,7 +243,7 @@ def addpatient(request):
                     x = name.replace(" ", "")
                     username = x.lower()
 
-                    query = Patient(patient_name=name, email=email, birth_date=birthdate, phone_num=phoneno, password=password, username=username, assigned_doctor=doctor)
+                    query = Patient(patient_name=name, email=email, birth_date=birthdate, phone_num=phoneno, password=password, username=username, assigned_doctor=doctor, gender=gender)
                     query.save()
                     return redirect('patients')
             return render(request, 'addPatient.html')
@@ -237,13 +254,17 @@ def adddoctor(request):
         if request.session['role'] == 'admin':
             if request.method == 'POST':
                 name = request.POST.get('name')
-                username = name.replace(" ", "")
-                N = 6
+                email = request.POST.get('email')
+                institution = request.POST.get('institution')
+                phoneno = request.POST.get('phoneno')
+                x = name.replace(" ", "")
+                username = x.lower()
+                N = 8
                 password = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(N))
 
-                query = Doctor(name=name, username=username, password=password)
+                query = Doctor(name=name, username=username, password=password, phone_num=phoneno, email=email, institution=institution)
                 query.save()
-                return render(request, 'doctors.html')
+                return redirect('doctors')
             return render(request, 'addDoctor.html')    
 
 # deletes patient from database
@@ -289,11 +310,6 @@ def deletecondition(request, condition, id):
             else:
                 doctor = ''
             return redirect('patient', id)
-            return render(request, 'viewPatient.html', {'patient':patient, 'conditions' : conditions, 'reports':reports, 'doctor' : doctor})
-            if patient.medical_conditions:
-                return render(request, 'viewPatient.html', {'patient':patient, 'conditions' : conditions, 'reports':reports, 'doctor' : doctor}) 
-            else:
-                return render(request, 'viewPatient.html', {'patient':patient, 'reports':reports, 'doctor' : doctor}) 
 
 # deletes report from database
 def deletereport(request, id):

@@ -23,6 +23,7 @@ urlpatterns = [
     path('deletecondition/<str:condition>/<int:id>/', views.deletecondition, name = "deletecondition"),
     path('restore/<int:id>/', views.restore, name = "restore"),
     path('archive/<int:id>/', views.archive, name = "archive"),
+    path('newpass/<int:id>/<str:role>/', views.newpassword, name = "newpass"),
     path('login/', views.login, name = "login"),
     path('logout/', views.logout, name = "logout"),
     path('profile/', views.profile, name = "profile"),

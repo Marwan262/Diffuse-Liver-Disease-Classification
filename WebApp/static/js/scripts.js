@@ -67,8 +67,17 @@ function toggleEditReport() {
     } 
 }
 
-function submitAnchor() {
+function submitCondition() {
     $("#addCondition").click()
+}
+
+function toggleActivePatients() {
+    active = $('[id="active"]');
+    if(document.getElementById('checkActive').checked) {
+        $(active).attr("hidden", false);
+    } else {
+        $(active).attr("hidden", true);
+    }
 }
 
 function toggleArchivedPatients() {
