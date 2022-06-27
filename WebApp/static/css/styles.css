@@ -3811,7 +3811,16 @@ textarea.form-control-lg {
 }
 
 .dropdown-menu.show {
+  
   display: block;
+
+}
+
+.img_pop_out {
+
+  transition: transform .5s;
+  transform: scale(2.5);
+
 }
 
 .dropdown-header {

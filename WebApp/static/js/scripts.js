@@ -71,6 +71,15 @@ function submitAnchor() {
     $("#addCondition").click()
 }
 
+function toggleArchivedPatients() {
+    archived = $('[id="archived"]');
+    if(document.getElementById('checkArchived').checked) {
+        $(archived).attr("hidden", false);
+    } else {
+        $(archived).attr("hidden", true);
+    }
+}
+
 function toggleAddCondition() {
     
     if ($("#confirm").is(":hidden")) {
