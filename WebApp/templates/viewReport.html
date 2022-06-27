@@ -19,7 +19,9 @@
                 </div>
                 <div class="card-body">
                     <form action="" method="post" name="edit">
+                        {% if request.session.role == 'admin' or request.session.role == 'doctor'%}
                         {% csrf_token %}
+                        {% endif %}
                         <dl class="row">
                             <dt class="col-6">Full Name</dt>
                             <dd id="pName" name="pName" class="col-6 ">{{patient.patient_name}}</dd>
@@ -33,7 +35,7 @@
                             <dd id="date" name="date" class="col-6 date">{{report.date}}</dd>
 
                             <dt class="col-6">Classification</dt>
-                            <dd id="classification" class="col-6 classification" name="classification">{{report.classification}}</dd>
+                            <dd id="classification" class="col-6 classification" name="classification">{{report.diagnosis}}</dd>
                             <dd id="classificationE" style="display: none;" class="col-6"><input type="text" name="classificationE" value="{{report.classification}}" required></dd>
                             
                             <dt class="col-6">Notes</dt>
@@ -49,7 +51,9 @@
 
                         </dl>
                     </form>
+                    {% if request.session.role == 'admin' or request.session.role == 'doctor'%}
                     <button onclick="toggleEditReport()"><i class="fas fa-edit "></i></button>
+                    {% endif %}
                 </div>
             </div>
             <div class="col-12"></div>
@@ -59,12 +63,13 @@
         
         <div class="col-md-12 px-4">
             {% if request.session.role == 'admin' or request.session.role == 'doctor'%}
-            <a href="{% url 'pdf' report.id %}">
-                <button class="btn btn-success">Download PDF</button>
-            </a>
-            {% endif %}
             <a href="{% url 'deletereport' report.id %}" class="px-4">
                 <button class="btn btn-danger">Delete Report</button>
+            </a>
+            {% endif %}
+            
+            <a href="{% url 'pdf' report.id %}">
+                <button class="btn btn-success">Download PDF</button>
             </a>
         </div>
     </main>

@@ -68,15 +68,19 @@
                                 <button hidden id="addCondition" name="addCondition" type="submit" class="btn btn-success"></button>
                             </div>
                             <hr hidden id="addHR">
+                            {% if conditions %}
                             {% for condition in conditions %}
                             {% if patient.is_archived or request.session.role == 'admin' %}
-                            <h6 id="id" class="">{{condition}}</h6><h6><a style="pointer-events: none; color: grey;" href="{% url 'deletecondition' condition patient.id %}">Remove</a></h6> 
+                            <h6 id="id" class="">{{condition}}</h6><h6><a style="pointer-events: none; color: grey;" href="#">Remove</a></h6> 
                             {% else %}
                             <h6 id="id" class="">{{condition}}</h6><h6><a href="{% url 'deletecondition' condition patient.id %}">Remove</a></h6> 
                             {% endif %}
                             
                             <hr>
                             {% endfor %}
+                            {% else %}
+                            <h6>No Medical Conditions.</h6>
+                            {% endif %}
                         </form>
                     </div>
                 </div>
@@ -131,6 +135,8 @@
                     <button onclick="" type="submit" class="btn btn-danger">Archive Patient</button>
                 </a>
             </div>
+            {% elif request.session.role == 'admin'%}
+            
             {% else %}
             <div class="col-md-12">
                 <a href="{% url 'restore' patient.id %}">
